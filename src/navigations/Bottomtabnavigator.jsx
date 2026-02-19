@@ -32,6 +32,14 @@ const BottomNavigator = () => {
                 />
             </TouchableOpacity>
 
+            <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'cart' })}>
+                <Icon
+                    name="cart"
+                    size={28}
+                    color={isActive('cart') ? "#cccc" : "#000"}
+                />
+            </TouchableOpacity>
+
         </View>
     );
 };
@@ -46,7 +54,7 @@ const styles = StyleSheet.create({
         right: 0,
         height: 70,
         backgroundColor: "#ffff",
-        borderTopLeftRadius: 35,
+        // borderTopLeftRadius: 35,
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
