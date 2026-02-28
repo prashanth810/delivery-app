@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { FlatList, Image, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, Image, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Header from '../components/Header'
 import SearchInput from '../components/SearchInput';
 import Bannercarosel from '../components/Bannercarosel';
+import { useDispatch, useSelector } from 'react-redux';
+import { handlegetcategories } from '../redux/slices/CategorySlice.js'
 
 const Homescreen = () => {
     const [search, setSearch] = useState("");
@@ -13,41 +15,41 @@ const Homescreen = () => {
             id: '1',
             name: 'Cow Milk Packet',
             price: 70,
-            imageUrl: 'https://thumbs.dreamstime.com/b/farm-fresh-dairy-concept-depicted-cute-cow-figurine-placed-bottle-milk-creating-attractive-banner-high-quality-338868419.jpg',
+            imageUrl:
+                'https://cdn.zeptonow.com/production/tr:w-403,ar-1000-1000,pr-true,f-auto,q-80/cms/product_variant/a05ee90f-d81b-43a5-8f40-8c16a981730e.jpeg',
         },
         {
             id: '2',
             name: 'Buffalo Milk',
             price: 80,
-            imageUrl: 'https://thumbs.dreamstime.com/b/farm-fresh-dairy-concept-depicted-cute-cow-figurine-placed-bottle-milk-creating-attractive-banner-high-quality-338868419.jpg',
+            imageUrl:
+                'https://www.bbassets.com/media/uploads/p/l/40149834_1-nandini-shubham-milk.jpg',
         },
         {
             id: '3',
-            name: 'Fresh Curd',
-            price: 50,
-            imageUrl: 'https://thumbs.dreamstime.com/b/farm-fresh-dairy-concept-depicted-cute-cow-figurine-placed-bottle-milk-creating-attractive-banner-high-quality-338868419.jpg',
+            name: 'Cow Milk Packet',
+            price: 70,
+            imageUrl:
+                'https://cdn.zeptonow.com/production/tr:w-403,ar-1000-1000,pr-true,f-auto,q-80/cms/product_variant/a05ee90f-d81b-43a5-8f40-8c16a981730e.jpeg',
         },
         {
             id: '4',
-            name: 'Paneer 200g',
-            price: 95,
-            imageUrl: 'https://thumbs.dreamstime.com/b/farm-fresh-dairy-concept-depicted-cute-cow-figurine-placed-bottle-milk-creating-attractive-banner-high-quality-338868419.jpg',
-        },
-        {
-            id: '5',
-            name: 'Butter 500g',
-            price: 120,
-            imageUrl: 'https://thumbs.dreamstime.com/b/farm-fresh-dairy-concept-depicted-cute-cow-figurine-placed-bottle-milk-creating-attractive-banner-high-quality-338868419.jpg',
-        },
-        {
-            id: '6',
-            name: 'Cheese Slices',
-            price: 140,
-            imageUrl: 'https://thumbs.dreamstime.com/b/farm-fresh-dairy-concept-depicted-cute-cow-figurine-placed-bottle-milk-creating-attractive-banner-high-quality-338868419.jpg',
+            name: 'Buffalo Milk',
+            price: 80,
+            imageUrl:
+                'https://www.bbassets.com/media/uploads/p/l/40149834_1-nandini-shubham-milk.jpg',
         },
     ];
 
+    const dispatch = useDispatch();
 
+    const { categories, categoryloading, categoryerror } = useSelector((state) => state.category.categorydata)
+
+    useEffect(() => {
+        dispatch(handlegetcategories());
+    }, [dispatch]);
+
+    console.log(categories, 'ccccccccccccccccc')
 
     return (
         <View style={styles.container}>
@@ -68,9 +70,17 @@ const Homescreen = () => {
                     </View>
 
                     {/* categories  */}
-                    {/* <View>
-
-                        </View> */}
+                    {categories.map((cat, i) => {
+                        return (
+                            <TouchableOpacity key={i}>
+                                <Image
+                                    source={{ uri: cat.imageurl }}
+                                    style={styles.catimg}
+                                />
+                                <Text> {cat.name} </Text>
+                            </TouchableOpacity>
+                        )
+                    })}
 
                     {/* flash sales  */}
                     <View style={styles.flash}>
@@ -155,7 +165,7 @@ const styles = StyleSheet.create({
     },
     itemimg: {
         width: 150,
-        height: 150,
+        height: 120,
         resizeMode: "cover",
         borderRadius: 3
     },
@@ -173,6 +183,12 @@ const styles = StyleSheet.create({
     price: {
         fontSize: 17,
         fontWeight: 600
+    },
+    catimg: {
+        width: 70,
+        height: 70,
+        borderRadius: 30,
+        resizeMode: "cover"
     }
 
 })
