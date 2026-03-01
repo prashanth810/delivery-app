@@ -5,10 +5,16 @@ import SearchInput from '../components/SearchInput';
 import Bannercarosel from '../components/Bannercarosel';
 import { useDispatch, useSelector } from 'react-redux';
 import { handlegetcategories } from '../redux/slices/CategorySlice.js'
+import CatLoading from '../components/CatLoading.jsx';
+import { useNavigation } from '@react-navigation/native';
+import MainNavigator from '../navigations/MainNavigator.jsx';
+
+
 
 const Homescreen = () => {
     const [search, setSearch] = useState("");
     const [query, setQuery] = useState("");
+    const navigation = useNavigation();
 
     const products = [
         {
@@ -49,7 +55,22 @@ const Homescreen = () => {
         dispatch(handlegetcategories());
     }, [dispatch]);
 
-    console.log(categories, 'ccccccccccccccccc')
+
+    const CategoryList = ({ cat, onPress }) => {
+        return (
+            <View key={cat._id}>
+                <TouchableOpacity className="mx-3" onPress={onPress}>
+                    <View className="w-24 h-24 bg-[#F3EBFF] rounded-2xl items-center justify-center shadow-sm">
+                        <Image
+                            source={{ uri: cat.imageurl }}
+                            style={styles.catimg}
+                        />
+                    </View>
+                    <Text className="text-center"> {cat.name} </Text>
+                </TouchableOpacity>
+            </View>
+        )
+    }
 
     return (
         <View style={styles.container}>
@@ -70,17 +91,24 @@ const Homescreen = () => {
                     </View>
 
                     {/* categories  */}
-                    {categories.map((cat, i) => {
-                        return (
-                            <TouchableOpacity key={i}>
-                                <Image
-                                    source={{ uri: cat.imageurl }}
-                                    style={styles.catimg}
-                                />
-                                <Text> {cat.name} </Text>
-                            </TouchableOpacity>
-                        )
-                    })}
+                    {categoryloading ? (
+                        <CatLoading />
+                    ) : (
+                        <FlatList
+                            data={categories}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item) => item._id}
+                            contentContainerStyle={{ paddingHorizontal: 10 }}
+                            renderItem={({ item }) => (
+                                <CategoryList cat={item}
+                                    onPress={() => navigation.navigate("category", {
+                                        categoryname: item
+                                    })} />
+                            )}
+                        />
+                    )}
+
 
                     {/* flash sales  */}
                     <View style={styles.flash}>
