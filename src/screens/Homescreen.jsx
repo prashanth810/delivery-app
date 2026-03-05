@@ -59,14 +59,14 @@ const Homescreen = () => {
     const CategoryList = ({ cat, onPress }) => {
         return (
             <View key={cat._id}>
-                <TouchableOpacity className="mx-3" onPress={onPress}>
-                    <View className="w-24 h-24 bg-[#F3EBFF] rounded-2xl items-center justify-center shadow-sm">
+                <TouchableOpacity style={{ margin: 5 }} onPress={onPress}>
+                    <View style={styles.catstyles}>
                         <Image
                             source={{ uri: cat.imageurl }}
                             style={styles.catimg}
                         />
                     </View>
-                    <Text className="text-center"> {cat.name} </Text>
+                    <Text style={{ textAlign: "center", fontSize: 12 }}> {cat.name} </Text>
                 </TouchableOpacity>
             </View>
         )
@@ -102,9 +102,12 @@ const Homescreen = () => {
                             contentContainerStyle={{ paddingHorizontal: 10 }}
                             renderItem={({ item }) => (
                                 <CategoryList cat={item}
-                                    onPress={() => navigation.navigate("category", {
-                                        categoryname: item
-                                    })} />
+                                    onPress={() =>
+                                        navigation.navigate("category", {
+                                            categoryId: item._id,
+                                            categoryname: item.name,
+                                        })
+                                    } />
                             )}
                         />
                     )}
@@ -116,12 +119,16 @@ const Homescreen = () => {
                             <Text style={styles.flashhead}> Flash Sale </Text>
                             <Text style={styles.flashviewall}> View All </Text>
                         </View>
+
+                        <View style={{ backgroundColor: "#e8fff0", paddingVertical: 30, marginHorizontal: 10 }}>
+                            <Text style={{ textAlign: 'center', color: "red" }}> Coming soon </Text>
+                        </View>
                     </View>
 
                     {/* poojo specials  */}
                     <View style={styles.flash}>
                         <View style={styles.flashrow}>
-                            <Text style={styles.flashhead}> Pojo Special </Text>
+                            <Text style={styles.flashhead}> Daily Special </Text>
                             <Text style={styles.flashviewall}> View All </Text>
                         </View>
                     </View>
@@ -213,10 +220,20 @@ const styles = StyleSheet.create({
         fontWeight: 600
     },
     catimg: {
-        width: 70,
-        height: 70,
+        width: 53,
+        height: 53,
         borderRadius: 30,
         resizeMode: "cover"
+    },
+    catstyles: {
+        width: 64,
+        height: 64,
+        backgroundColor: "#F3EBFF",
+        alignItems: "center",
+        justifyContent: "center",
+        shadowOffset: 5,
+        marginTop: 15,
+        borderRadius: "100%"
     }
 
 })
