@@ -104,14 +104,13 @@ const CategoryMenu = () => {
                     <Text> No Products found !!!</Text>
                 </View>
             ) : (
-                <View style={{ flex: 1, marginHorizontal: 4 }}>
+                <View style={{ flex: 1, marginHorizontal: 4, marginBottom: 80 }}>
                     <FlatList
                         data={catpro}
                         keyExtractor={(item, i) => item._id || i}
                         showsVerticalScrollIndicator={false}
                         renderItem={Rendercatproducts}
                         numColumns={2}
-                        contentContainerStyle={() => <View style={{ paddingBottom: 10 }} />}
                     />
                 </View>
             )}
