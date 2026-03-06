@@ -13,7 +13,9 @@ const Rootnavigator = () => {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             {isauthenticate ? (
-                <Stack.Screen name="main" component={MainNavigator} />
+                <>
+                    <Stack.Screen name="main" component={MainNavigator} />
+                </>
             ) : (
                 <Stack.Screen name='auth' component={AuthNavigator} />
             )}

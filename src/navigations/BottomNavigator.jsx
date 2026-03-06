@@ -39,6 +39,14 @@ const BottomNavigator = () => {
                     color={isActive('userprofile') ? "#ccc" : "#3c3c3c"}
                 />
             </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'cart' })}>
+                <Icon
+                    name="cart"
+                    size={28}
+                    color={isActive('userprofile') ? "#ccc" : "#3c3c3c"}
+                />
+            </TouchableOpacity>
         </View>
     );
 };
