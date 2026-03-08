@@ -27,24 +27,27 @@ const BottomNavigator = () => {
             <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'home' })}>
                 <Icon
                     name="home-outline"
-                    size={28}
-                    color={isActive('home') ? "#ccc" : "#3c3c3c"}
+                    size={26}
+                    color={isActive('home') ? "#10B981" : "#3c3c3c"}
+                    style={styles.icons}
                 />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'userprofile' })}>
                 <Icon
                     name="account-outline"
-                    size={28}
-                    color={isActive('userprofile') ? "#ccc" : "#3c3c3c"}
+                    size={26}
+                    color={isActive('userprofile') ? "#10B981" : "#3c3c3c"}
+                    style={styles.icons}
                 />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'cart' })}>
                 <Icon
                     name="cart"
-                    size={28}
-                    color={isActive('userprofile') ? "#ccc" : "#3c3c3c"}
+                    size={26}
+                    color={isActive('cart') ? "#10B981" : "#3c3c3c"}
+                    style={styles.icons}
                 />
             </TouchableOpacity>
         </View>
@@ -59,10 +62,8 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 70,
+        height: 54,
         backgroundColor: "white",
-        borderTopRightRadius: 35,
-        borderTopLeftRadius: 35,
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
@@ -83,5 +84,8 @@ const styles = StyleSheet.create({
         backgroundColor: "green",
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    icons: {
+        paddingBottom: 14,
     },
 });

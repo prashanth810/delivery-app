@@ -220,20 +220,17 @@ const styles = StyleSheet.create({
         fontWeight: 600
     },
     catimg: {
-        width: 53,
-        height: 53,
-        borderRadius: 30,
-        resizeMode: "cover"
+        width: 50,
+        height: 50,
+        backgroundColor: "#f4f4f5",
+        borderRadius: 50,
+        marginTop: 6
     },
     catstyles: {
-        width: 64,
-        height: 64,
-        backgroundColor: "#F3EBFF",
+        marginHorizontal: 8,
+        paddingVertical: 7,
+        width: 40,
         alignItems: "center",
-        justifyContent: "center",
-        shadowOffset: 5,
-        marginTop: 15,
-        borderRadius: "100%"
     }
 
 })

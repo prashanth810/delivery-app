@@ -10,7 +10,8 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchProductsByCategory, handlegetcategories } from '../redux/slices/CategorySlice'
 import { addToCart, incrementQty, decrementQty, selectItemQty } from '../redux/slices/CartSlice'
-import CategoryModel from './CategoryModel.jsx'
+import CategoryModel from './CategoryModel.jsx';
+import CartModelfooter from './CartModelfooter.jsx';
 
 const CategoryMenu = () => {
     const route = useRoute();
@@ -81,47 +82,43 @@ const CategoryMenu = () => {
                 <View style={styles.infoBox}>
                     <Text style={styles.productName} numberOfLines={2}>{item?.name}</Text>
                     <Text style={styles.productdesc} numberOfLines={2}>{item?.description}</Text>
-                    <Text style={styles.productPrice}>₹{item?.price}</Text>
+
+                    <View style={styles.priceRow}>
+                        <Text style={styles.productPrice}>₹{item?.price}</Text>
+
+                        {qty === 0 ? (
+                            <TouchableOpacity
+                                style={styles.addBtn}
+                                activeOpacity={0.8}
+                                onPress={() => handleAdd(item)}
+                            >
+                                <Text style={styles.addBtnText}>ADD</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <View style={styles.qtyControl}>
+                                <TouchableOpacity
+                                    style={styles.qtyBtn}
+                                    onPress={() => handleDecrement(item._id)}
+                                >
+                                    <Text style={styles.qtyBtnText}>−</Text>
+                                </TouchableOpacity>
+
+                                <Text style={styles.qtyNumber}>{qty}</Text>
+
+                                <TouchableOpacity
+                                    style={styles.qtyBtn}
+                                    onPress={() => handleIncrement(item._id)}
+                                >
+                                    <Text style={styles.qtyBtnText}>+</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                    </View>
                 </View>
 
                 {/* ── Get In Banner ── */}
                 <View style={styles.getin}>
                     <Text style={styles.getintext}>⚡ GET IN 15 MIN</Text>
-                </View>
-
-                {/* ── Add / Qty Controls ── */}
-                <View style={styles.cartRow}>
-                    {qty === 0 ? (
-                        // ADD button — shown when item not in cart
-                        <TouchableOpacity
-                            style={styles.addBtn}
-                            activeOpacity={0.8}
-                            onPress={() => handleAdd(item)}
-                        >
-                            <Text style={styles.addBtnText}>ADD</Text>
-                        </TouchableOpacity>
-                    ) : (
-                        // — qty + controls — shown when item already in cart
-                        <View style={styles.qtyControl}>
-                            <TouchableOpacity
-                                style={styles.qtyBtn}
-                                onPress={() => handleDecrement(item._id)}
-                                activeOpacity={0.8}
-                            >
-                                <Text style={styles.qtyBtnText}>−</Text>
-                            </TouchableOpacity>
-
-                            <Text style={styles.qtyNumber}>{qty}</Text>
-
-                            <TouchableOpacity
-                                style={styles.qtyBtn}
-                                onPress={() => handleIncrement(item._id)}
-                                activeOpacity={0.8}
-                            >
-                                <Text style={styles.qtyBtnText}>+</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
                 </View>
             </Pressable>
         );
@@ -130,6 +127,10 @@ const CategoryMenu = () => {
     const handleSelectCategory = (id) => {
         dispatch(fetchProductsByCategory(id));
     };
+
+    const handleviewcart = () => {
+        navigation.navigate("cart");
+    }
 
     return (
         <View style={styles.container}>
@@ -157,7 +158,7 @@ const CategoryMenu = () => {
                     <Text>No Products found !!!</Text>
                 </View>
             ) : (
-                <View style={{ flex: 1, marginHorizontal: 4, marginBottom: 80 }}>
+                <View style={{ flex: 1, marginHorizontal: 4, marginBottom: 110 }}>
                     <FlatList
                         data={catpro}
                         keyExtractor={(item, i) => item._id || String(i)}
@@ -181,6 +182,8 @@ const CategoryMenu = () => {
                 cat={categories}
                 onSelectCategory={handleSelectCategory}
             />
+
+            <CartModelfooter onPress={handleviewcart} text={"View Cart"} />
         </View>
     );
 };
@@ -346,6 +349,55 @@ const styles = StyleSheet.create({
     qtyNumber: {
         color: "#fff",
         fontSize: 14,
+        fontWeight: "700",
+        minWidth: 20,
+        textAlign: "center",
+    },
+    priceRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginTop: 6,
+    },
+
+    addBtn: {
+        borderWidth: 1.5,
+        borderColor: "#10B981",
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+        borderRadius: 6,
+        backgroundColor: "#fff",
+    },
+
+    addBtnText: {
+        color: "#10B981",
+        fontWeight: "700",
+        fontSize: 12,
+    },
+
+    qtyControl: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#10B981",
+        backgroundColor: "#f2fcf9",
+        borderRadius: 6,
+    },
+
+    qtyBtn: {
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+    },
+
+    qtyBtnText: {
+        color: "#10B981",
+        fontSize: 16,
+        fontWeight: "700",
+    },
+
+    qtyNumber: {
+        color: "#10B981",
+        fontSize: 13,
         fontWeight: "700",
         minWidth: 20,
         textAlign: "center",

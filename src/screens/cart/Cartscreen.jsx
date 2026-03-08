@@ -7,7 +7,9 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { useNavigation } from '@react-navigation/native'
-import { fetchCart, decrementQty, removeFromCart, clearCart, selectCartItems, selectCartTotal, selectCartCount, incrementQty } from '../../redux/slices/CartSlice'
+import { fetchCart, decrementQty, removeFromCart, clearCart, selectCartItems, selectCartTotal, selectCartCount, incrementQty } from '../../redux/slices/CartSlice';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import CartModelfooter from '../../categories/CartModelfooter'
 
 const Cartscreen = () => {
     const dispatch = useDispatch()
@@ -28,49 +30,59 @@ const Cartscreen = () => {
     const handleRemove = (id) => dispatch(removeFromCart(id))
     const handleClearAll = () => dispatch(clearCart())
 
+    const handlecheckout = () => {
+        navigation.navigate("checkout");
+    }
+
     // ── Single cart item row ──
     const RenderCartItem = ({ item }) => (
         <View style={styles.itemCard}>
-            {/* Product Image */}
-            <Image source={{ uri: item?.imageurl }} style={styles.itemImage} />
 
             {/* Info */}
             <View style={styles.itemInfo}>
                 <Text style={styles.itemName} numberOfLines={2}>{item?.name}</Text>
-                <Text style={styles.itemDesc} numberOfLines={1}>{item?.description}</Text>
-                <Text style={styles.itemPrice}>₹{item?.price}</Text>
-            </View>
-
-            {/* Right: qty + delete */}
-            <View style={styles.itemRight}>
-                {/* Delete button */}
-                <TouchableOpacity onPress={() => handleRemove(item._id)} style={styles.deleteBtn}>
-                    <Icon name="trash-can-outline" size={18} color="#e53935" />
-                </TouchableOpacity>
-
-                {/* — qty + controls */}
-                <View style={styles.qtyControl}>
-                    <TouchableOpacity
-                        style={styles.qtyBtn}
-                        onPress={() => handleDecrement(item._id)}
-                        activeOpacity={0.8}
-                    >
-                        <Text style={styles.qtyBtnText}>−</Text>
-                    </TouchableOpacity>
-
-                    <Text style={styles.qtyNumber}>{item.quantity}</Text>
-
-                    <TouchableOpacity
-                        style={styles.qtyBtn}
-                        onPress={() => handleIncrement(item._id)}
-                        activeOpacity={0.8}
-                    >
-                        <Text style={styles.qtyBtnText}>+</Text>
-                    </TouchableOpacity>
-                </View>
 
                 {/* subtotal per item */}
                 <Text style={styles.itemSubtotal}>₹{item.price * item.quantity}</Text>
+
+                <View style={styles.delremove}>
+                    <View style={styles.delivery}>
+                        <Ionicons
+                            name="bicycle-sharp" color="#c2c2c2" size={16} />
+                        <Text style={{ color: "#c2c2c2", fontSize: 13 }}> Today 15 minuates</Text>
+                    </View>
+
+                    <TouchableOpacity onPress={() => handleRemove(item._id)} style={styles.deleteBtn}>
+                        <Icon name="trash-can-outline" size={16}
+                            color="#c2c2c2" />
+                        <Text style={{ color: "#c2c2c2", fontSize: 12 }}> Remove </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            <View>
+                {/* Product Image */}
+                <Image source={{ uri: item?.imageurl }} style={styles.itemImage} />
+
+                {/* Right: qty + delete */}
+                <View style={styles.itemRight}>
+                    {/* — qty + controls */}
+                    <View style={styles.qtyControl}>
+                        <TouchableOpacity
+                            style={styles.qtyBtn}
+                            onPress={() => handleDecrement(item._id)}
+                            activeOpacity={0.8}>
+                            <Text style={styles.qtyBtnText}>−</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.qtyNumber}>{item.quantity}</Text>
+                        <TouchableOpacity
+                            style={styles.qtyBtn}
+                            onPress={() => handleIncrement(item._id)}
+                            activeOpacity={0.8} >
+                            <Text style={styles.qtyBtnText}>+</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
         </View>
     )
@@ -99,22 +111,21 @@ const Cartscreen = () => {
                     <Icon name="arrow-left" size={24} color="#1a1a1a" />
                 </Pressable>
 
-                <Text style={styles.headerTitle}>My Cart</Text>
-
-                {items.length > 0 && (
+                <Text style={styles.headerTitle}> Your Cart </Text>
+                <Text />
+                {/* {items.length > 0 && (
                     <TouchableOpacity onPress={handleClearAll}>
                         <Text style={styles.clearText}>Clear All</Text>
                     </TouchableOpacity>
-                )}
+                )} */}
             </View>
 
             {/* ── Item count badge ── */}
-            {items.length > 0 && (
-                <View style={styles.countBadge}>
-                    <Icon name="cart-outline" size={16} color="purple" />
-                    <Text style={styles.countText}>{count} item{count > 1 ? 's' : ''} in cart</Text>
-                </View>
-            )}
+            <View style={styles.countBadge}>
+                <Text style={styles.countText}> Get 50 Count Prawns @259</Text>
+                <Text style={{ color: "#10B981" }} > |</Text>
+                <Text style={styles.countText}> Use code : 259PR (TCA)</Text>
+            </View>
 
             {/* ── Loading ── */}
             {loading && (
@@ -137,9 +148,8 @@ const Cartscreen = () => {
             )}
 
             {/* ── Bottom Checkout Bar ── */}
-            {items.length > 0 && (
-                <View style={styles.bottomBar}>
-                    {/* Bill summary */}
+            {/* {items.length > 0 && (
+                <View style={styles.bottomBar}> 
                     <View style={styles.billRow}>
                         <Text style={styles.billLabel}>Subtotal ({count} items)</Text>
                         <Text style={styles.billValue}>₹{total}</Text>
@@ -152,14 +162,15 @@ const Cartscreen = () => {
                         <Text style={styles.totalLabel}>Total</Text>
                         <Text style={styles.totalValue}>₹{total}</Text>
                     </View>
-
-                    {/* Checkout button */}
+ 
                     <TouchableOpacity style={styles.checkoutBtn} activeOpacity={0.85}>
                         <Icon name="lightning-bolt" size={18} color="#fff" />
                         <Text style={styles.checkoutText}>Proceed to Checkout</Text>
                     </TouchableOpacity>
                 </View>
-            )}
+            )} */}
+
+            <CartModelfooter text={"Procced TO Checkout"} onPress={handlecheckout} />
 
         </View>
     )
@@ -202,18 +213,28 @@ const styles = StyleSheet.create({
     countBadge: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 6,
-        backgroundColor: "#f3e5f5",
+        justifyContent: "center",
+        backgroundColor: "#f2fcf9",
         marginHorizontal: 16,
         marginTop: 12,
         marginBottom: 4,
-        paddingVertical: 6,
+        paddingVertical: 8,
         paddingHorizontal: 12,
-        borderRadius: 8,
+        borderRadius: 5,
+        borderWidth: 1,
+        borderStyle: "dashed",
+        borderColor: "#10B981",
+    },
+
+    countText: {
+        fontSize: 12,
+        fontWeight: "500",
+        color: "#065f46",
+        textAlign: "center",
     },
     countText: {
         fontSize: 13,
-        color: "purple",
+        color: "#10B981",
         fontWeight: "600",
     },
 
@@ -228,10 +249,10 @@ const styles = StyleSheet.create({
     itemCard: {
         flexDirection: "row",
         backgroundColor: "#fff",
-        marginHorizontal: 16,
+        marginHorizontal: 14,
         marginTop: 10,
-        borderRadius: 12,
-        padding: 12,
+        borderRadius: 10,
+        padding: 9,
         alignItems: "center",
         elevation: 1,
         shadowColor: "#000",
@@ -242,6 +263,7 @@ const styles = StyleSheet.create({
     itemImage: {
         width: 70,
         height: 70,
+        margin: "auto",
         borderRadius: 10,
         backgroundColor: "#f5f5f5",
         resizeMode: "cover",
@@ -252,60 +274,57 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     itemName: {
-        fontSize: 13,
-        fontWeight: "600",
+        fontSize: 15,
+        fontWeight: "500",
         color: "#1a1a1a",
         marginBottom: 3,
     },
-    itemDesc: {
-        fontSize: 11,
-        color: "#999",
-        marginBottom: 5,
-    },
     itemPrice: {
-        fontSize: 13,
-        fontWeight: "700",
+        fontSize: 14,
+        fontWeight: "800",
         color: "#444",
     },
 
     // ── Right side ──
     itemRight: {
-        alignItems: "center",
-        gap: 6,
+        paddingTop: 5
     },
     deleteBtn: {
-        padding: 4,
+        flexDirection: "row",
+        alignItems: 'center',
+        gap: 5,
     },
     qtyControl: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "purple",
-        borderRadius: 8,
+        backgroundColor: "#f0fcf8",
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: "#10B981",
         overflow: "hidden",
     },
     qtyBtn: {
-        paddingHorizontal: 10,
+        paddingHorizontal: 9,
         paddingVertical: 5,
         alignItems: "center",
         justifyContent: "center",
     },
     qtyBtnText: {
-        color: "#fff",
+        color: "#10B981",
         fontSize: 16,
         fontWeight: "700",
         lineHeight: 18,
     },
     qtyNumber: {
-        color: "#fff",
-        fontSize: 13,
-        fontWeight: "700",
-        minWidth: 22,
+        color: "#10B981",
+        fontSize: 12,
+        fontWeight: "800",
+        minWidth: 20,
         textAlign: "center",
     },
     itemSubtotal: {
-        fontSize: 13,
-        fontWeight: "800",
-        color: "purple",
+        fontSize: 17,
+        fontWeight: "bold",
     },
 
     separator: {
@@ -406,5 +425,15 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 15,
         fontWeight: "700",
+    },
+    delivery: {
+        flexDirection: "row",
+        alignItems: 'center',
+        gap: 2
+    },
+    delremove: {
+        flexDirection: "column",
+        gap: 5,
+        paddingTop: 6,
     },
 })

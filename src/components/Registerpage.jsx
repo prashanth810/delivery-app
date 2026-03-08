@@ -3,35 +3,48 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 
-const Loginpage = () => {
+const Registerpage = () => {
     const [showpass, setShowpass] = useState(false);
     const [formdata, setFormdata] = useState({
+        phone: "",
         email: "",
         password: "",
     });
 
     const navigation = useNavigation();
 
-    const handlesignup = () => {
-        navigation.navigate("signup");
+    const handlelogin = () => {
+        navigation.navigate("login");
     }
 
     const handlechange = (key, value) => {
         setFormdata(prev => ({ ...prev, [key]: value }));
     };
 
-    const handlesubmit = () => {
-        navigation.navigate("main", { screen: "home" }); // ✅ works now
-    };
-
     return (
         <View style={styles.container}>
-            <Text style={styles.getstarts}>Get Started</Text>
+            <Text style={styles.getstarts}> Sign Up </Text>
             <Text style={styles.subtitle}>
-                Enter Your details to pick your fresh food
+                Create a account to pick your fresh food
             </Text>
 
             <View style={styles.inputWrapper}>
+                <Text> Phone Number </Text>
+                <View
+                    style={styles.inpstyle}>
+                    <Feather name="smartphone" size={16} color="#c2c2c2" />
+                    <Text style={{ borderRightWidth: 1, borderColor: "#cccc" }} />
+                    <TextInput
+                        style={{ flex: 1, color: "#000" }}
+                        placeholder="Enter phone number"
+                        value={formdata.phone}
+                        keyboardType='phone-pad'
+                        placeholderTextColor={"#9ca3af"}
+                        onChangeText={(e) => handlechange("name", e)}
+                    />
+                </View>
+
+
                 <Text> Email </Text>
                 <View
                     style={styles.inpstyle}>
@@ -41,6 +54,7 @@ const Loginpage = () => {
                         style={{ flex: 1, color: "#000" }}
                         placeholder="Enter Email"
                         value={formdata.email}
+                        keyboardType='email-address'
                         placeholderTextColor={"#9ca3af"}
                         onChangeText={(e) => handlechange("email", e)}
                     />
@@ -60,6 +74,7 @@ const Loginpage = () => {
                     <TextInput
                         style={{ flex: 1, color: "#000" }}
                         placeholder="Enter password"
+                        keyboardType='password'
                         value={formdata.password}
                         secureTextEntry={!showpass}
                         placeholderTextColor={"#9ca3af"}
@@ -69,27 +84,21 @@ const Loginpage = () => {
             </View>
 
             <View style={{ width: "100%" }}>
-                <TouchableOpacity style={styles.continue} onPress={handlesubmit}>
-                    <Text style={styles.continuetxt}> CONTINUE  </Text>
+                <TouchableOpacity style={styles.continue}>
+                    <Text style={styles.continuetxt}> Sign Up  </Text>
                 </TouchableOpacity>
             </View>
 
             <View style={{ width: "100%" }}>
-                <TouchableOpacity style={styles.signin}>
-                    <Text style={styles.singintxt}> Sign in With Google  </Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={{ width: "100%" }}>
-                <TouchableOpacity style={styles.dontacc} onPress={handlesignup}>
-                    <Text style={styles.dontacctxt}>Don't have an account? Sign Up  </Text>
+                <TouchableOpacity style={styles.dontacc} onPress={handlelogin}>
+                    <Text style={styles.dontacctxt}> Alredy have an account? Login  </Text>
                 </TouchableOpacity>
             </View>
         </View>
     )
 }
 
-export default Loginpage
+export default Registerpage
 
 const styles = StyleSheet.create({
     container: {
@@ -142,19 +151,6 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         textAlign: "center",
         color: "#fff",
-        fontSize: 15,
-    },
-    signin: {
-        borderWidth: 1,
-        borderColor: "#cccc",
-        width: "100%",
-        borderRadius: 30,
-        marginTop: 14
-    },
-    singintxt: {
-        paddingVertical: 12,
-        textAlign: "center",
-        fontWeight: "700",
         fontSize: 15,
     },
     dontacc: {
