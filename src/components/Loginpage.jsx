@@ -1,7 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useDispatch } from 'react-redux';
+import { login } from '../redux/slices/AuthSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Loginpage = () => {
     const [showpass, setShowpass] = useState(false);
@@ -11,6 +14,7 @@ const Loginpage = () => {
     });
 
     const navigation = useNavigation();
+    const dispatch = useDispatch();
 
     const handlesignup = () => {
         navigation.navigate("signup");
@@ -20,8 +24,17 @@ const Loginpage = () => {
         setFormdata(prev => ({ ...prev, [key]: value }));
     };
 
-    const handlesubmit = () => {
-        navigation.navigate("main", { screen: "home" }); // ✅ works now
+    const handlesubmit = async () => {
+        console.log("login started")
+        try {
+            const res = await dispatch(login(formdata)).unwrap();
+            console.log(res.token, 'login success');
+            await AsyncStorage.setItem("token", res.token);
+            Alert.alert("Login Success");
+        } catch (error) {
+            console.log(error, 'login failed');
+            Alert.alert("Login Failed", error || "Something went wrong");
+        }
     };
 
     return (

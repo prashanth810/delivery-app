@@ -6,7 +6,7 @@ import BottomNavigator from './BottomNavigator.jsx';
 import CategoryMenu from '../categories/CategoryMenu.jsx';
 import CartScreen from '../screens/cart/Cartscreen.jsx';
 import UserProfile from '../screens/userscreen/UserProfile.jsx';
-
+import ProccedCheckout from '../screens/cart/ProccedCheckout.jsx';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +18,7 @@ const MainNavigator = () => {
                 <Stack.Screen name='category' component={CategoryMenu} />
                 <Stack.Screen name='userprofile' component={UserProfile} />
                 <Stack.Screen name='cart' component={CartScreen} />
+                <Stack.Screen name='checkout' component={ProccedCheckout} />
 
 
             </Stack.Navigator>

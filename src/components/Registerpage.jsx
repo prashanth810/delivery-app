@@ -1,7 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { signup } from '../redux/slices/AuthSlice';
+import { useDispatch } from 'react-redux';
 
 const Registerpage = () => {
     const [showpass, setShowpass] = useState(false);
@@ -12,14 +14,28 @@ const Registerpage = () => {
     });
 
     const navigation = useNavigation();
+    const dispatch = useDispatch();
+
+    const handlechange = (key, value) => {
+        setFormdata(prev => ({ ...prev, [key]: value }));
+    };
 
     const handlelogin = () => {
         navigation.navigate("login");
     }
 
-    const handlechange = (key, value) => {
-        setFormdata(prev => ({ ...prev, [key]: value }));
+    const handlesubmit = async () => {
+        console.log("singup  started")
+        try {
+            const res = await dispatch(signup(formdata)).unwrap();
+            Alert.alert("sign up Success");
+            navigation.navigate("login");
+        } catch (error) {
+            console.log(error, 'signup failed');
+            Alert.alert("sign up Failed", error || "Something went wrong");
+        }
     };
+
 
     return (
         <View style={styles.container}>
@@ -40,7 +56,7 @@ const Registerpage = () => {
                         value={formdata.phone}
                         keyboardType='phone-pad'
                         placeholderTextColor={"#9ca3af"}
-                        onChangeText={(e) => handlechange("name", e)}
+                        onChangeText={(e) => handlechange("phone", e)}
                     />
                 </View>
 
@@ -84,7 +100,7 @@ const Registerpage = () => {
             </View>
 
             <View style={{ width: "100%" }}>
-                <TouchableOpacity style={styles.continue}>
+                <TouchableOpacity style={styles.continue} onPress={handlesubmit}>
                     <Text style={styles.continuetxt}> Sign Up  </Text>
                 </TouchableOpacity>
             </View>

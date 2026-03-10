@@ -158,7 +158,7 @@ const CategoryMenu = () => {
                     <Text>No Products found !!!</Text>
                 </View>
             ) : (
-                <View style={{ flex: 1, marginHorizontal: 4, marginBottom: 110 }}>
+                <View style={{ flex: 1, marginHorizontal: 4, paddingBottom: 55 }}>
                     <FlatList
                         data={catpro}
                         keyExtractor={(item, i) => item._id || String(i)}

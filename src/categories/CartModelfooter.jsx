@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         paddingHorizontal: 10,
         paddingVertical: 5,
-        borderRadius: 15
+        borderRadius: 8
     },
 
     checkoutText: {

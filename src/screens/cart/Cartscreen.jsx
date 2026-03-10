@@ -10,15 +10,17 @@ import { useNavigation } from '@react-navigation/native'
 import { fetchCart, decrementQty, removeFromCart, clearCart, selectCartItems, selectCartTotal, selectCartCount, incrementQty } from '../../redux/slices/CartSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CartModelfooter from '../../categories/CartModelfooter'
+import SimilarProducts from './SimilarProducts.jsx'
 
 const Cartscreen = () => {
     const dispatch = useDispatch()
     const navigation = useNavigation()
 
     const items = useSelector(selectCartItems)
+    console.log(items, 'iiiiiiiiiiiiiii')
     const total = useSelector(selectCartTotal)
     const count = useSelector(selectCartCount)
-    const loading = useSelector((state) => state.cart.loading)
+    const loading = useSelector((state) => state.cart.loading);
 
     // Load cart from AsyncStorage when screen mounts
     useEffect(() => {
@@ -28,7 +30,6 @@ const Cartscreen = () => {
     const handleIncrement = (id) => dispatch(incrementQty(id))
     const handleDecrement = (id) => dispatch(decrementQty(id))
     const handleRemove = (id) => dispatch(removeFromCart(id))
-    const handleClearAll = () => dispatch(clearCart())
 
     const handlecheckout = () => {
         navigation.navigate("checkout");
@@ -48,7 +49,7 @@ const Cartscreen = () => {
                 <View style={styles.delremove}>
                     <View style={styles.delivery}>
                         <Ionicons
-                            name="bicycle-sharp" color="#c2c2c2" size={16} />
+                            name="bicycle-sharp" color="#3c3c3c" size={16} />
                         <Text style={{ color: "#c2c2c2", fontSize: 13 }}> Today 15 minuates</Text>
                     </View>
 
@@ -136,20 +137,23 @@ const Cartscreen = () => {
 
             {/* ── Cart Items List ── */}
             {!loading && (
-                <FlatList
-                    data={items}
-                    keyExtractor={(item, i) => item._id || String(i)}
-                    renderItem={RenderCartItem}
-                    contentContainerStyle={items.length === 0 ? { flex: 1 } : { paddingBottom: 160 }}
-                    showsVerticalScrollIndicator={false}
-                    ListEmptyComponent={<EmptyCart />}
-                    ItemSeparatorComponent={() => <View style={styles.separator} />}
-                />
+                <>
+                    <FlatList
+                        data={items}
+                        keyExtractor={(item, i) => item._id || String(i)}
+                        renderItem={RenderCartItem}
+                        contentContainerStyle={items.length === 0 ? { flex: 1 } : { paddingBottom: 160 }}
+                        showsVerticalScrollIndicator={false}
+                        ListEmptyComponent={<EmptyCart />}
+                        ItemSeparatorComponent={() => <View style={styles.separator} />}
+                        ListFooterComponent={items.length > 0 ? <SimilarProducts items={items} /> : null}
+                    />
+                </>
             )}
 
             {/* ── Bottom Checkout Bar ── */}
             {/* {items.length > 0 && (
-                <View style={styles.bottomBar}> 
+                <View style={styles.bottomBar}>
                     <View style={styles.billRow}>
                         <Text style={styles.billLabel}>Subtotal ({count} items)</Text>
                         <Text style={styles.billValue}>₹{total}</Text>
@@ -162,7 +166,7 @@ const Cartscreen = () => {
                         <Text style={styles.totalLabel}>Total</Text>
                         <Text style={styles.totalValue}>₹{total}</Text>
                     </View>
- 
+
                     <TouchableOpacity style={styles.checkoutBtn} activeOpacity={0.85}>
                         <Icon name="lightning-bolt" size={18} color="#fff" />
                         <Text style={styles.checkoutText}>Proceed to Checkout</Text>
@@ -170,7 +174,7 @@ const Cartscreen = () => {
                 </View>
             )} */}
 
-            <CartModelfooter text={"Procced TO Checkout"} onPress={handlecheckout} />
+            <CartModelfooter text={"Procced To Checkout"} onPress={handlecheckout} />
 
         </View>
     )
