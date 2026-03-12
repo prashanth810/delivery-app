@@ -1,9 +1,10 @@
-import { Modal, StyleSheet, Text, TouchableOpacity, View, Animated, Dimensions } from 'react-native'
-import React, { useState, useRef } from 'react'
+import { Modal, StyleSheet, Text, TouchableOpacity, View, Animated, Dimensions, Pressable, ScrollView } from 'react-native'
+import React, { useState, useRef, useEffect } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
-import { logoutuser } from '../../redux/slices/AuthSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { checkAuth, handleprofiledata, logoutuser } from '../../redux/slices/AuthSlice';
+import Ionicons from 'react-native-vector-icons/Ionicons'
 
 const { height } = Dimensions.get('window');
 
@@ -12,6 +13,21 @@ const UserProfile = () => {
     const slideAnim = useRef(new Animated.Value(height)).current;
     const navigation = useNavigation();
     const dispatch = useDispatch();
+
+    const { profileuser, profileloading, profileerror } = useSelector((state) => state.auth.profile)
+
+    useEffect(() => {
+        dispatch(handleprofiledata());
+    }, [dispatch]);
+
+    const { isauthenticate, isCheckingAuth } = useSelector(
+        (state) => state.auth.logindata
+    );
+
+    // ✅ check token when app opens
+    useEffect(() => {
+        dispatch(checkAuth());
+    }, []);
 
     const openModal = () => {
         setLogout(true);
@@ -46,20 +62,91 @@ const UserProfile = () => {
         });
     };
 
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>User Profile</Text>
+    const maskedphone = profileuser?.phone ? `${profileuser?.phone?.slice(0, 3)}xxx ${profileuser.phone.slice(-4)}` : "";
 
-            <TouchableOpacity style={styles.logoutbtn} onPress={openModal}>
-                <Text style={styles.logouttext}>Logout</Text>
-            </TouchableOpacity>
+    // menu options 
+    const profileItems = [
+        { icon: 'gift-outline', title: 'Earn Rewards', subtitle: 'Invite friends and earn rewards' },
+        { icon: 'call-outline', title: 'Contact Us', subtitle: 'Help regarding your recent purchase' },
+        { divider: true },
+        { icon: 'help-circle-outline', title: 'FAQs', subtitle: 'Frequently Asked Questions' },
+        { icon: 'document-text-outline', title: 'Terms & Conditions' },
+        { icon: 'shield-checkmark-outline', title: 'Privacy Policy' },
+        { icon: 'information-circle-outline', title: 'Seller Information' },
+        { icon: 'log-in-outline', title: 'Login' },
+        { icon: 'earth-outline', title: 'Change Country' },
+    ];
+
+    return (
+        <ScrollView style={styles.container}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 90 }}>
+            <Text style={styles.title}> Hi, {profileuser?.email || "Hi Guest👋"} </Text>
+
+            {!isauthenticate ? (
+                <>
+                    <View>
+                        <Text> Please </Text>
+                        <Pressable>
+                            <Text> Login </Text>
+                        </Pressable>
+
+                        <Text> to enjoy your shopping </Text>
+                    </View>
+                </>
+            ) : (
+                <View style={styles.lable}>
+                    <Text style={styles.subemail}> Hi, {profileuser?.email || "Hi Guest👋"} </Text>
+
+                    <Text style={styles.subemail}> {maskedphone} </Text>
+                </View>
+            )}
+
+            {/* menu options  */}
+            <View style={{ paddingHorizontal: 3, paddingVertical: 10, }}>
+                {profileItems.map((item, id) => {
+                    return (
+                        item?.divider ? (
+                            <View style={styles.divider} />
+                        ) : (
+                            <Pressable style={styles.profilemenu} key={id}>
+
+                                <View style={styles.iconsbg}>
+                                    <Ionicons name={item.icon} size={18} color={"#4b5563"} />
+                                </View>
+
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.profielheadings}> {item.title} </Text>
+                                    {item?.subtitle && <Text style={styles.subhead}> {item?.subtitle} </Text>}
+                                </View>
+
+                                <Ionicons name="chevron-forward" size={18} color={"#9ca3af"} />
+                            </Pressable>
+                        )
+                    )
+                })}
+            </View>
+
+            <View>
+                <TouchableOpacity style={styles.logoutbtn} onPress={openModal}>
+                    <Text style={styles.logouttext}>Logout</Text>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.brandmain}>
+                <View style={styles.brandsubmain}>
+                    <Ionicons name="leaf-outline" size={25} color={"#7c3aed"} />
+                    <Text style={[styles.brand, { color: "#9333ea" }]}> Fresh </Text>
+                    <Text style={[styles.brand, { color: "#16a34a" }]}> to </Text>
+                    <Text style={[styles.brand, { color: "#9333ea" }]}> home </Text>
+                </View>
+            </View>
 
             <Modal
                 visible={logout}
                 transparent={true}
                 animationType="none"
-                onRequestClose={closeModal}
-            >
+                onRequestClose={closeModal} >
                 <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={() => closeModal()} />
 
                 <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
@@ -80,7 +167,7 @@ const UserProfile = () => {
                     </TouchableOpacity>
                 </Animated.View>
             </Modal>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -90,26 +177,25 @@ export default UserProfile;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: '#f5f5f5',
+        paddingVertical: 18,
+        paddingHorizontal: 10,
+        backgroundColor: '#FEFEFE',
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 30,
         color: '#222',
     },
     logoutbtn: {
-        borderWidth: 1.5,
-        borderColor: '#e53935',
-        padding: 12,
-        borderRadius: 10,
-        backgroundColor: '#fff',
+        borderWidth: 1,
+        padding: 10,
+        borderColor: "red",
+        borderRadius: 5,
     },
     logouttext: {
-        textAlign: 'center',
-        fontWeight: '700',
-        fontSize: 16,
+        textAlign: "center",
+        fontWeight: '600',
+        fontSize: 15,
         color: '#e53935',
     },
 
@@ -169,12 +255,6 @@ const styles = StyleSheet.create({
         lineHeight: 21,
         marginBottom: 20,
     },
-    divider: {
-        width: '100%',
-        height: 1,
-        backgroundColor: '#f0f0f0',
-        marginBottom: 20,
-    },
     confirmBtn: {
         width: '100%',
         backgroundColor: '#e53935',
@@ -199,5 +279,59 @@ const styles = StyleSheet.create({
         color: '#555',
         fontSize: 16,
         fontWeight: '600',
+    },
+    subemail: {
+        fontSize: 14,
+        color: "#606061"
+    },
+    divider: {
+        height: 1,
+        backgroundColor: "#e6e7e8",
+        marginVertical: 5,
+        marginHorizontal: 1,
+    },
+    profielheadings: {
+        color: "#2a2b2b",
+        fontWeight: "500",
+        fontSize: 15,
+    },
+    subhead: {
+        fontSize: 12,
+        color: "#636363",
+        marginTop: 1.
+    },
+    iconsbg: {
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        backgroundColor: "#f7f8fa",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 8,
+    },
+    profilemenu: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 5,
+        gap: 8,
+        marginBottom: 15
+    },
+    brand: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+    brandmain: {
+        marginTop: 12,
+        alignItems: "center",
+    },
+    brandsubmain: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    lable: {
+        flexDirection: "column",
+        gap: 4,
+        paddingHorizontal: 4,
+        paddingTop: 5
     },
 });

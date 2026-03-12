@@ -10,7 +10,6 @@ import { useNavigation } from '@react-navigation/native';
 import MainNavigator from '../navigations/MainNavigator.jsx';
 
 
-
 const Homescreen = () => {
     const [search, setSearch] = useState("");
     const [query, setQuery] = useState("");

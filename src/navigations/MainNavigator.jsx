@@ -7,6 +7,8 @@ import CategoryMenu from '../categories/CategoryMenu.jsx';
 import CartScreen from '../screens/cart/Cartscreen.jsx';
 import UserProfile from '../screens/userscreen/UserProfile.jsx';
 import ProccedCheckout from '../screens/cart/ProccedCheckout.jsx';
+import Addaddress from '../screens/address/Addaddress.jsx';
+import OrderConfirmation from '../screens/order/OrderConfirmation.jsx';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +21,8 @@ const MainNavigator = () => {
                 <Stack.Screen name='userprofile' component={UserProfile} />
                 <Stack.Screen name='cart' component={CartScreen} />
                 <Stack.Screen name='checkout' component={ProccedCheckout} />
+                <Stack.Screen name='addnewaddress' component={Addaddress} />
+                <Stack.Screen name='OrderConfirmation' component={OrderConfirmation} />
 
 
             </Stack.Navigator>

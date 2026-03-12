@@ -14,6 +14,7 @@ import CategoryModel from './CategoryModel.jsx';
 import CartModelfooter from './CartModelfooter.jsx';
 
 const CategoryMenu = () => {
+    const [count, setCount] = useState(1);
     const route = useRoute();
     const navigation = useNavigation();
     const { categoryname, categoryId } = route?.params;
@@ -70,7 +71,7 @@ const CategoryMenu = () => {
                     <Image source={{ uri: item?.imageurl }} style={styles.image} />
 
                     <View style={styles.stock}>
-                        <Text style={{ fontSize: 12, fontWeight: "500" }}>1 pack</Text>
+                        <Text style={{ fontSize: 12, fontWeight: "500" }}> {count} pack</Text>
                     </View>
 
                     <TouchableOpacity style={styles.heart}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo'
@@ -18,6 +18,7 @@ const Header = () => {
             }]}>Delivery Started</Text>
 
             <View>
+
                 <Text style={[styles.textcolor, {
                     fontSize: 20,
                     fontWeight: "800",
@@ -40,7 +41,9 @@ const Header = () => {
                     <View style={styles.icons}>
                         <Entypo name='heart-outlined' size={20} color={"#fff"} />
 
-                        <Feather name='user' size={20} color={"#fff"} />
+                        <Pressable onPress={() => navigation.navigate("userprofile")}>
+                            <Feather name='user' size={20} color={"#fff"} />
+                        </Pressable>
                     </View>
                 </View>
             </View>

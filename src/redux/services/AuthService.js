@@ -9,3 +9,8 @@ export const handlesignup = (data) => {
 export const handlelogin = (data) => {
     return Baseurl.post(`/login`, data);
 }
+
+// fetch login user details
+export const fetchprofile = () => {
+    return Baseurl.get(`/profile`);
+}

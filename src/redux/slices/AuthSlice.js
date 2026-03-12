@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { handlelogin, handlesignup } from '../services/AuthService';
+import { fetchprofile, handlelogin, handlesignup } from '../services/AuthService';
 
 // singup 
 export const signup = createAsyncThunk("auth/signup", async (data, thunkAPI) => {
@@ -36,6 +36,18 @@ export const checkAuth = createAsyncThunk("auth/checkAuth", async (_, thunkAPI) 
     }
 });
 
+
+// fetch user login profie data
+export const handleprofiledata = createAsyncThunk("auth/profile", async (_, thunkAPI) => {
+    try {
+        const response = await fetchprofile();
+        return response.data.data;
+    }
+    catch (error) {
+        return thunkAPI.rejectWithValue(error.message);
+    }
+})
+
 const initialState = {
     logindata: {
         loginuser: {},
@@ -48,6 +60,11 @@ const initialState = {
         signuser: {},
         signuploading: false,
         signuperror: null,
+    },
+    profile: {
+        profileuser: {},
+        profileloading: false,
+        profileerror: null,
     }
 };
 
@@ -99,6 +116,20 @@ const AuthSlice = createSlice({
             .addCase(checkAuth.rejected, (state) => {
                 state.logindata.isauthenticate = false;
                 state.logindata.isCheckingAuth = false;
+            })
+
+            // fetch user profile data 
+            .addCase(handleprofiledata.pending, (state) => {
+                state.profile.profileloading = true;
+                state.profile.profileerror = null;
+            })
+            .addCase(handleprofiledata.fulfilled, (state, action) => {
+                state.profile.profileloading = false;
+                state.profile.profileuser = action.payload;
+            })
+            .addCase(handleprofiledata.rejected, (state, action) => {
+                state.profile.profileloading = false;
+                state.profile.profileerror = action.payload;
             })
     }
 });
