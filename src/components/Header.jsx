@@ -39,8 +39,6 @@ const Header = () => {
                     </View>
 
                     <View style={styles.icons}>
-                        <Entypo name='heart-outlined' size={20} color={"#fff"} />
-
                         <Pressable onPress={() => navigation.navigate("userprofile")}>
                             <Feather name='user' size={20} color={"#fff"} />
                         </Pressable>
@@ -68,6 +66,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 4,
+        paddingHorizontal: 10,
     },
     textcolor: {
         color: "#fff"

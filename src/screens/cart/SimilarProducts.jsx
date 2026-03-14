@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, incrementQty, decrementQty } from '../../redux/slices/CartSlice'
 import { fetchProductsByCategory } from '../../redux/slices/CategorySlice'
-
+import ProductCardSkeleton from '../../components/CartSkeletonCart.jsx';
 
 const SimilarProducts = ({ items }) => {
     const dispatch = useDispatch()
@@ -37,11 +37,11 @@ const SimilarProducts = ({ items }) => {
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.title}> Similar Products🛍️ </Text>
+                <Text style={styles.title}> Similar Products 🛍️ </Text>
             </View>
 
             {catprodloading ? (
-                <ActivityIndicator color="#10B981" style={{ marginVertical: 16 }} />
+                <ProductCardSkeleton />
             ) : (
                 <FlatList
                     data={similarList}
@@ -109,8 +109,8 @@ export default SimilarProducts
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 12,
-        paddingBottom: 10,
+        marginTop: 20,
+        paddingBottom: 14,
     },
     header: {
         flexDirection: 'row',

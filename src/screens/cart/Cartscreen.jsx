@@ -37,55 +37,64 @@ const Cartscreen = () => {
 
     // ── Single cart item row ──
     const RenderCartItem = ({ item }) => (
-        <View style={styles.itemCard}>
-
-            {/* Info */}
-            <View style={styles.itemInfo}>
-                <Text style={styles.itemName} numberOfLines={2}>{item?.name}</Text>
-
-                {/* subtotal per item */}
-                <Text style={styles.itemSubtotal}>₹{item.price * item.quantity}</Text>
-
-                <View style={styles.delremove}>
-                    <View style={styles.delivery}>
-                        <Ionicons
-                            name="bicycle-sharp" color="#3c3c3c" size={16} />
-                        <Text style={{ color: "#c2c2c2", fontSize: 13 }}> Today 15 minuates</Text>
-                    </View>
-
-                    <TouchableOpacity onPress={() => handleRemove(item._id)} style={styles.deleteBtn}>
-                        <Icon name="trash-can-outline" size={16}
-                            color="#c2c2c2" />
-                        <Text style={{ color: "#c2c2c2", fontSize: 12 }}> Remove </Text>
-                    </TouchableOpacity>
-                </View>
+        <>
+            {/* ── Item count badge ── */}
+            <View View style={styles.countBadge}>
+                <Text style={styles.countText}> Get 50 Count Prawns @259</Text>
+                <Text style={{ color: "#10B981" }} > |</Text>
+                <Text style={styles.countText}> Use code : 259PR (TCA)</Text>
             </View>
 
-            <View>
-                {/* Product Image */}
-                <Image source={{ uri: item?.imageurl }} style={styles.itemImage} />
+            <View style={styles.itemCard}>
 
-                {/* Right: qty + delete */}
-                <View style={styles.itemRight}>
-                    {/* — qty + controls */}
-                    <View style={styles.qtyControl}>
-                        <TouchableOpacity
-                            style={styles.qtyBtn}
-                            onPress={() => handleDecrement(item._id)}
-                            activeOpacity={0.8}>
-                            <Text style={styles.qtyBtnText}>−</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.qtyNumber}>{item.quantity}</Text>
-                        <TouchableOpacity
-                            style={styles.qtyBtn}
-                            onPress={() => handleIncrement(item._id)}
-                            activeOpacity={0.8} >
-                            <Text style={styles.qtyBtnText}>+</Text>
+                {/* Info */}
+                <View style={styles.itemInfo}>
+                    <Text style={styles.itemName} numberOfLines={2}>{item?.name}</Text>
+
+                    {/* subtotal per item */}
+                    <Text style={styles.itemSubtotal}>₹{item.price * item.quantity}</Text>
+
+                    <View style={styles.delremove}>
+                        <View style={styles.delivery}>
+                            <Ionicons
+                                name="bicycle-sharp" color="#3c3c3c" size={16} />
+                            <Text style={{ color: "#c2c2c2", fontSize: 13 }}> Today 15 minuates</Text>
+                        </View>
+
+                        <TouchableOpacity onPress={() => handleRemove(item._id)} style={styles.deleteBtn}>
+                            <Icon name="trash-can-outline" size={16}
+                                color="#c2c2c2" />
+                            <Text style={{ color: "#c2c2c2", fontSize: 12 }}> Remove </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+
+                <View>
+                    {/* Product Image */}
+                    <Image source={{ uri: item?.imageurl }} style={styles.itemImage} />
+
+                    {/* Right: qty + delete */}
+                    <View style={styles.itemRight}>
+                        {/* — qty + controls */}
+                        <View style={styles.qtyControl}>
+                            <TouchableOpacity
+                                style={styles.qtyBtn}
+                                onPress={() => handleDecrement(item._id)}
+                                activeOpacity={0.8}>
+                                <Text style={styles.qtyBtnText}>−</Text>
+                            </TouchableOpacity>
+                            <Text style={styles.qtyNumber}>{item.quantity}</Text>
+                            <TouchableOpacity
+                                style={styles.qtyBtn}
+                                onPress={() => handleIncrement(item._id)}
+                                activeOpacity={0.8} >
+                                <Text style={styles.qtyBtnText}>+</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
             </View>
-        </View>
+        </>
     )
 
     // ── Empty cart view ──
@@ -119,13 +128,6 @@ const Cartscreen = () => {
                         <Text style={styles.clearText}>Clear All</Text>
                     </TouchableOpacity>
                 )} */}
-            </View>
-
-            {/* ── Item count badge ── */}
-            <View style={styles.countBadge}>
-                <Text style={styles.countText}> Get 50 Count Prawns @259</Text>
-                <Text style={{ color: "#10B981" }} > |</Text>
-                <Text style={styles.countText}> Use code : 259PR (TCA)</Text>
             </View>
 
             {/* ── Loading ── */}

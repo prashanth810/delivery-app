@@ -1,154 +1,145 @@
 import { Modal, StyleSheet, Text, TouchableOpacity, View, Animated, Dimensions, Pressable, ScrollView } from 'react-native'
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, memo, useCallback } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkAuth, handleprofiledata, logoutuser } from '../../redux/slices/AuthSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import Feather from 'react-native-vector-icons/Feather'
 
 const { height } = Dimensions.get('window');
 
-const UserProfile = () => {
+const PROFILE_ITEMS = [
+    { icon: 'gift-outline', title: 'Earn Rewards', subtitle: 'Invite friends and earn rewards' },
+    { icon: 'call-outline', title: 'Contact Us', subtitle: 'Help regarding your recent purchase' },
+    { divider: true },
+    { icon: 'help-circle-outline', title: 'FAQs', subtitle: 'Frequently Asked Questions' },
+    { icon: 'document-text-outline', title: 'Terms & Conditions' },
+    { icon: 'shield-checkmark-outline', title: 'Privacy Policy' },
+    { icon: 'information-circle-outline', title: 'Seller Information' },
+    { icon: 'log-in-outline', title: 'Login' },
+    { icon: 'earth-outline', title: 'Change Country' },
+];
+
+// ── Separate memo component for each menu item ──
+const ProfileMenuItem = memo(({ item }) => (
+    item?.divider ? (
+        <View style={styles.divider} />
+    ) : (
+        <Pressable style={styles.profilemenu}>
+            <View style={styles.iconsbg}>
+                <Ionicons name={item.icon} size={18} color="#4b5563" />
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.profielheadings}>{item.title}</Text>
+                {item?.subtitle && <Text style={styles.subhead}>{item.subtitle}</Text>}
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#9ca3af" />
+        </Pressable>
+    )
+));
+
+const UserProfile = memo(() => {
     const [logout, setLogout] = useState(false);
     const slideAnim = useRef(new Animated.Value(height)).current;
-    const navigation = useNavigation();
     const dispatch = useDispatch();
 
-    const { profileuser, profileloading, profileerror } = useSelector((state) => state.auth.profile)
+    const { profileuser } = useSelector((state) => state.auth.profile);
+    const { isauthenticate } = useSelector((state) => state.auth.logindata);
 
     useEffect(() => {
         dispatch(handleprofiledata());
+        dispatch(checkAuth());
     }, [dispatch]);
 
-    const { isauthenticate, isCheckingAuth } = useSelector(
-        (state) => state.auth.logindata
-    );
+    const maskedphone = profileuser?.phone
+        ? `${profileuser.phone.slice(0, 3)}xxx ${profileuser.phone.slice(-4)}`
+        : "";
 
-    // ✅ check token when app opens
-    useEffect(() => {
-        dispatch(checkAuth());
-    }, []);
-
-    const openModal = () => {
+    const openModal = useCallback(() => {
         setLogout(true);
         Animated.spring(slideAnim, {
             toValue: 0,
             useNativeDriver: true,
             bounciness: 4,
         }).start();
-    };
+    }, [slideAnim]);
 
-    const closeModal = (callback) => {
+    const closeModal = useCallback((callback) => {
         Animated.timing(slideAnim, {
             toValue: height,
             duration: 300,
             useNativeDriver: true,
         }).start(() => {
             setLogout(false);
-            slideAnim.setValue(height); // ✅ Reset animation value for next open
-            if (callback) callback(); // ✅ Fire callback AFTER animation completes
+            slideAnim.setValue(height);
+            if (callback) callback();
         });
-    };
+    }, [slideAnim]);
 
-    const handleLogout = async () => {
+    const handleLogout = useCallback(async () => {
         try {
-            await AsyncStorage.clear(); // ✅ Await storage clear first
+            await AsyncStorage.clear();
         } catch (e) {
             console.error('Failed to clear storage:', e);
         }
-
-        closeModal(() => {
-            dispatch(logoutuser());
-        });
-    };
-
-    const maskedphone = profileuser?.phone ? `${profileuser?.phone?.slice(0, 3)}xxx ${profileuser.phone.slice(-4)}` : "";
-
-    // menu options 
-    const profileItems = [
-        { icon: 'gift-outline', title: 'Earn Rewards', subtitle: 'Invite friends and earn rewards' },
-        { icon: 'call-outline', title: 'Contact Us', subtitle: 'Help regarding your recent purchase' },
-        { divider: true },
-        { icon: 'help-circle-outline', title: 'FAQs', subtitle: 'Frequently Asked Questions' },
-        { icon: 'document-text-outline', title: 'Terms & Conditions' },
-        { icon: 'shield-checkmark-outline', title: 'Privacy Policy' },
-        { icon: 'information-circle-outline', title: 'Seller Information' },
-        { icon: 'log-in-outline', title: 'Login' },
-        { icon: 'earth-outline', title: 'Change Country' },
-    ];
+        closeModal(() => dispatch(logoutuser()));
+    }, [closeModal, dispatch]);
 
     return (
-        <ScrollView style={styles.container}
+        <ScrollView
+            style={styles.container}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 90 }}>
-            <Text style={styles.title}> Hi, {profileuser?.email || "Hi Guest👋"} </Text>
 
+            {/* ── Title ── */}
+            <Text style={styles.title}>Hi, {profileuser?.email || "Hi Guest👋"}</Text>
+
+            {/* ── Auth State ── */}
             {!isauthenticate ? (
-                <>
-                    <View>
-                        <Text> Please </Text>
-                        <Pressable>
-                            <Text> Login </Text>
-                        </Pressable>
-
-                        <Text> to enjoy your shopping </Text>
-                    </View>
-                </>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                    <Text>Please</Text>
+                    <Pressable><Text style={{ color: 'purple', fontWeight: '600' }}>Login</Text></Pressable>
+                    <Text>to enjoy your shopping</Text>
+                </View>
             ) : (
-                <View style={styles.lable}>
-                    <Text style={styles.subemail}> Hi, {profileuser?.email || "Hi Guest👋"} </Text>
-
-                    <Text style={styles.subemail}> {maskedphone} </Text>
+                <View style={{ paddingTop: 6 }}>
+                    <View style={styles.lable}>
+                        <Text style={styles.subemail}>{profileuser?.email}</Text>
+                        <Text style={styles.subemail}>{maskedphone}</Text>
+                    </View>
                 </View>
             )}
 
-            {/* menu options  */}
-            <View style={{ paddingHorizontal: 3, paddingVertical: 10, }}>
-                {profileItems.map((item, id) => {
-                    return (
-                        item?.divider ? (
-                            <View style={styles.divider} />
-                        ) : (
-                            <Pressable style={styles.profilemenu} key={id}>
-
-                                <View style={styles.iconsbg}>
-                                    <Ionicons name={item.icon} size={18} color={"#4b5563"} />
-                                </View>
-
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.profielheadings}> {item.title} </Text>
-                                    {item?.subtitle && <Text style={styles.subhead}> {item?.subtitle} </Text>}
-                                </View>
-
-                                <Ionicons name="chevron-forward" size={18} color={"#9ca3af"} />
-                            </Pressable>
-                        )
-                    )
-                })}
+            {/* ── Menu Items ── */}
+            <View style={{ paddingHorizontal: 3, paddingVertical: 10 }}>
+                {PROFILE_ITEMS.map((item, id) => (
+                    <ProfileMenuItem key={id} item={item} />
+                ))}
             </View>
 
-            <View>
-                <TouchableOpacity style={styles.logoutbtn} onPress={openModal}>
-                    <Text style={styles.logouttext}>Logout</Text>
-                </TouchableOpacity>
-            </View>
+            {/* ── Logout Button ── */}
+            <TouchableOpacity style={styles.logoutbtn} onPress={openModal}>
+                <Text style={styles.logouttext}>Logout</Text>
+            </TouchableOpacity>
 
+            {/* ── Brand ── */}
             <View style={styles.brandmain}>
                 <View style={styles.brandsubmain}>
-                    <Ionicons name="leaf-outline" size={25} color={"#7c3aed"} />
-                    <Text style={[styles.brand, { color: "#9333ea" }]}> Fresh </Text>
-                    <Text style={[styles.brand, { color: "#16a34a" }]}> to </Text>
-                    <Text style={[styles.brand, { color: "#9333ea" }]}> home </Text>
+                    <Ionicons name="leaf-outline" size={25} color="#7c3aed" />
+                    <Text style={[styles.brand, { color: "#9333ea" }]}>Fresh </Text>
+                    <Text style={[styles.brand, { color: "#16a34a" }]}>to </Text>
+                    <Text style={[styles.brand, { color: "#9333ea" }]}>home</Text>
                 </View>
             </View>
 
+            {/* ── Logout Modal ── */}
             <Modal
                 visible={logout}
                 transparent={true}
                 animationType="none"
-                onRequestClose={closeModal} >
+                onRequestClose={() => closeModal()}>
                 <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={() => closeModal()} />
-
                 <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
                     <View style={styles.handleBar} />
                     <View style={styles.avatarCircle}>
@@ -167,12 +158,12 @@ const UserProfile = () => {
                     </TouchableOpacity>
                 </Animated.View>
             </Modal>
+
         </ScrollView>
     );
-};
+});
 
 export default UserProfile;
-
 
 const styles = StyleSheet.create({
     container: {
@@ -186,11 +177,23 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#222',
     },
+    lable: {
+        flexDirection: "column",
+        gap: 4,
+        paddingHorizontal: 4,
+    },
+    subemail: {
+        fontSize: 14,
+        color: "#606061",
+    },
     logoutbtn: {
         borderWidth: 1,
-        padding: 10,
-        borderColor: "red",
-        borderRadius: 5,
+        paddingVertical: 10,
+        width: "52%",
+        marginHorizontal: "auto",
+        borderColor: "#d60404",
+        backgroundColor: "#f7f0f0",
+        borderRadius: 10,
     },
     logouttext: {
         textAlign: "center",
@@ -198,14 +201,53 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#e53935',
     },
-
-    // Backdrop
+    divider: {
+        height: 1,
+        backgroundColor: "#e6e7e8",
+        marginVertical: 5,
+        marginHorizontal: 1,
+    },
+    profilemenu: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 5,
+        gap: 8,
+        marginBottom: 15,
+    },
+    iconsbg: {
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        backgroundColor: "#f7f8fa",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    profielheadings: {
+        color: "#595959",
+        fontWeight: "500",
+        fontSize: 13,
+    },
+    subhead: {
+        fontSize: 11,
+        color: "#666666",
+        marginTop: 1,
+    },
+    brandmain: {
+        marginTop: 12,
+        alignItems: "center",
+    },
+    brandsubmain: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    brand: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
     backdrop: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.45)',
     },
-
-    // Bottom Sheet
     sheet: {
         position: 'absolute',
         bottom: 0,
@@ -279,59 +321,5 @@ const styles = StyleSheet.create({
         color: '#555',
         fontSize: 16,
         fontWeight: '600',
-    },
-    subemail: {
-        fontSize: 14,
-        color: "#606061"
-    },
-    divider: {
-        height: 1,
-        backgroundColor: "#e6e7e8",
-        marginVertical: 5,
-        marginHorizontal: 1,
-    },
-    profielheadings: {
-        color: "#2a2b2b",
-        fontWeight: "500",
-        fontSize: 15,
-    },
-    subhead: {
-        fontSize: 12,
-        color: "#636363",
-        marginTop: 1.
-    },
-    iconsbg: {
-        width: 40,
-        height: 40,
-        borderRadius: 8,
-        backgroundColor: "#f7f8fa",
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: 8,
-    },
-    profilemenu: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 5,
-        gap: 8,
-        marginBottom: 15
-    },
-    brand: {
-        fontSize: 20,
-        fontWeight: "bold",
-    },
-    brandmain: {
-        marginTop: 12,
-        alignItems: "center",
-    },
-    brandsubmain: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    lable: {
-        flexDirection: "column",
-        gap: 4,
-        paddingHorizontal: 4,
-        paddingTop: 5
     },
 });

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useNavigationState } from '@react-navigation/native';
+import Feather from 'react-native-vector-icons/Feather';
 
 const BottomNavigator = () => {
     const navigation = useNavigation();
@@ -47,6 +48,15 @@ const BottomNavigator = () => {
                     name="cart"
                     size={26}
                     color={isActive('cart') ? "#10B981" : "#3c3c3c"}
+                    style={styles.icons}
+                />
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'orders' })}>
+                <Feather
+                    name="box"
+                    size={26}
+                    color={isActive('orders') ? "#10B981" : "#3c3c3c"}
                     style={styles.icons}
                 />
             </TouchableOpacity>

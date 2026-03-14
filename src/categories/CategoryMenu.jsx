@@ -6,17 +6,20 @@ import React, { useEffect, useState } from 'react'
 import { useRoute, useNavigation } from '@react-navigation/native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import EvilIcons from 'react-native-vector-icons/EvilIcons'
+import Feather from 'react-native-vector-icons/Feather'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchProductsByCategory, handlegetcategories } from '../redux/slices/CategorySlice'
 import { addToCart, incrementQty, decrementQty, selectItemQty } from '../redux/slices/CartSlice'
 import CategoryModel from './CategoryModel.jsx';
 import CartModelfooter from './CartModelfooter.jsx';
+import Categorymenuskeliton from '../components/Categorymenuskeliton.jsx';
 
 const CategoryMenu = () => {
     const [count, setCount] = useState(1);
     const route = useRoute();
     const navigation = useNavigation();
+    const [initialLoaded, setInitialLoaded] = useState(false);
     const { categoryname, categoryId } = route?.params;
 
     const dispatch = useDispatch();
@@ -26,6 +29,13 @@ const CategoryMenu = () => {
     const { catpro, catprodloading, catproderror } = useSelector((state) => state.category.categoryprods);
     const { categories } = useSelector((state) => state.category.categorydata);
     const cartItems = useSelector((state) => state.cart.items);
+
+    useEffect(() => {
+        if (categoryId) {
+            dispatch(fetchProductsByCategory(categoryId))
+                .finally(() => setInitialLoaded(true));
+        }
+    }, [categoryId]);
 
     useEffect(() => {
         dispatch(handlegetcategories());
@@ -142,37 +152,45 @@ const CategoryMenu = () => {
                         <Icon name="arrow-left" size={24} />
                     </Pressable>
 
-                    <Pressable style={styles.categoryWrapper} onPress={() => setCategoriesModal(true)}>
+                    <Pressable style={styles.categoryWrapper}  >
                         <Text style={styles.categoryText}>{categoriess}</Text>
-                        <FontAwesome name="angle-down" size={18} />
                     </Pressable>
                 </View>
 
-                <Pressable>
-                    <EvilIcons name="search" size={26} />
-                </Pressable>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Pressable>
+                        <EvilIcons name="search" size={26} />
+                    </Pressable>
+
+                    <Pressable onPress={() => setCategoriesModal(true)}>
+                        <Feather name="filter" size={18} />
+                    </Pressable>
+                </View>
             </View>
 
-            {/* ── Product Grid ── */}
-            {catpro.length === 0 ? (
-                <View style={styles.emptyBox}>
-                    <Text>No Products found !!!</Text>
-                </View>
+            {!initialLoaded && catprodloading ? (
+                <Categorymenuskeliton />
             ) : (
-                <View style={{ flex: 1, marginHorizontal: 4, paddingBottom: 55 }}>
-                    <FlatList
-                        data={catpro}
-                        keyExtractor={(item, i) => item._id || String(i)}
-                        showsVerticalScrollIndicator={false}
-                        renderItem={Rendercatproducts}
-                        numColumns={2}
-                        ListEmptyComponent={
-                            <Text style={{ color: "lightgray", textAlign: "center" }}>
-                                No products in this category
-                            </Text>
-                        }
-                    />
-                </View>
+                catpro.length === 0 ? (
+                    <View style={styles.emptyBox}>
+                        <Text>No Products found !!!</Text>
+                    </View>
+                ) : (
+                    <View style={{ flex: 1, marginHorizontal: 4, paddingBottom: 55 }}>
+                        <FlatList
+                            data={catpro}
+                            keyExtractor={(item, i) => item._id || String(i)}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={Rendercatproducts}
+                            numColumns={2}
+                            ListEmptyComponent={
+                                <Text style={{ color: "lightgray", textAlign: "center" }}>
+                                    No products in this category
+                                </Text>
+                            }
+                        />
+                    </View>
+                )
             )}
 
             {/* ── Category Modal ── */}
