@@ -38,13 +38,6 @@ const Cartscreen = () => {
     // ── Single cart item row ──
     const RenderCartItem = ({ item }) => (
         <>
-            {/* ── Item count badge ── */}
-            <View View style={styles.countBadge}>
-                <Text style={styles.countText}> Get 50 Count Prawns @259</Text>
-                <Text style={{ color: "#10B981" }} > |</Text>
-                <Text style={styles.countText}> Use code : 259PR (TCA)</Text>
-            </View>
-
             <View style={styles.itemCard}>
 
                 {/* Info */}
@@ -139,6 +132,13 @@ const Cartscreen = () => {
             {/* ── Cart Items List ── */}
             {!loading && (
                 <>
+                    {/* ── Item count badge ── */}
+                    <View View style={styles.countBadge}>
+                        <Text style={styles.countText}> Get 2 Dairy Products @129</Text>
+                        <Text style={{ color: "#10B981", }} > | </Text>
+                        <Text style={styles.countText}> 129DR (TCA)</Text>
+                    </View>
+
                     <FlatList
                         data={items}
                         keyExtractor={(item, i) => item._id || String(i)}

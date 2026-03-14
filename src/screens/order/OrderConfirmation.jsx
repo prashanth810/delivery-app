@@ -35,7 +35,7 @@ const OrderConfirmation = () => {
                     <Text style={styles.continuetxt}> Continue Shopping </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate("orders")}>
                     <Text style={styles.vieworders}> View Orders </Text>
                 </TouchableOpacity>
             </View>
