@@ -26,16 +26,18 @@ const CategoryMenu = () => {
     const { width } = Dimensions.get("window");
     const card_width = (width - 32) / 2;
 
-    const { catpro, catprodloading, catproderror } = useSelector((state) => state.category.categoryprods);
+    const { catpro, catprodloading, catproderror, page, hasMore } = useSelector((state) => state.category.categoryprods);
     const { categories } = useSelector((state) => state.category.categorydata);
     const cartItems = useSelector((state) => state.cart.items);
 
+    // Initial fetch — page 1 on mount or categoryId change
     useEffect(() => {
         if (categoryId) {
-            dispatch(fetchProductsByCategory(categoryId))
+            dispatch(fetchProductsByCategory({ categoryId, page: 1, limit: 10 }))
                 .finally(() => setInitialLoaded(true));
         }
     }, [categoryId]);
+
 
     useEffect(() => {
         dispatch(handlegetcategories());
@@ -135,13 +137,21 @@ const CategoryMenu = () => {
         );
     };
 
-    const handleSelectCategory = (id) => {
-        dispatch(fetchProductsByCategory(id));
-    };
 
     const handleviewcart = () => {
         navigation.navigate("cart");
     }
+
+    const loadMoreProducts = () => {
+        if (!catprodloading && hasMore) {
+            dispatch(fetchProductsByCategory({ categoryId, page: page + 1, limit: 10 }));
+        }
+    };
+
+    // handleSelectCategory — reset to page 1 on category switch
+    const handleSelectCategory = (id) => {
+        dispatch(fetchProductsByCategory({ categoryId: id, page: 1, limit: 10 }));
+    };
 
     return (
         <View style={styles.container}>
@@ -183,6 +193,8 @@ const CategoryMenu = () => {
                             showsVerticalScrollIndicator={false}
                             renderItem={Rendercatproducts}
                             numColumns={2}
+                            onEndReached={loadMoreProducts}
+                            onEndReachedThreshold={0.5}
                             ListEmptyComponent={
                                 <Text style={{ color: "lightgray", textAlign: "center" }}>
                                     No products in this category

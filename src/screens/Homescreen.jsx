@@ -15,57 +15,33 @@ const Homescreen = () => {
     const [query, setQuery] = useState("");
     const navigation = useNavigation();
 
-    const products = [
-        {
-            id: '1',
-            name: 'Cow Milk Packet',
-            price: 70,
-            imageUrl:
-                'https://cdn.zeptonow.com/production/tr:w-403,ar-1000-1000,pr-true,f-auto,q-80/cms/product_variant/a05ee90f-d81b-43a5-8f40-8c16a981730e.jpeg',
-        },
-        {
-            id: '2',
-            name: 'Buffalo Milk',
-            price: 80,
-            imageUrl:
-                'https://www.bbassets.com/media/uploads/p/l/40149834_1-nandini-shubham-milk.jpg',
-        },
-        {
-            id: '3',
-            name: 'Cow Milk Packet',
-            price: 70,
-            imageUrl:
-                'https://cdn.zeptonow.com/production/tr:w-403,ar-1000-1000,pr-true,f-auto,q-80/cms/product_variant/a05ee90f-d81b-43a5-8f40-8c16a981730e.jpeg',
-        },
-        {
-            id: '4',
-            name: 'Buffalo Milk',
-            price: 80,
-            imageUrl:
-                'https://www.bbassets.com/media/uploads/p/l/40149834_1-nandini-shubham-milk.jpg',
-        },
-    ];
-
     const dispatch = useDispatch();
 
-    const { categories, categoryloading, categoryerror } = useSelector((state) => state.category.categorydata)
+    const { categories, categoryloading, categoryerror, page, totalPages } = useSelector((state) => state.category.categorydata)
 
     useEffect(() => {
-        dispatch(handlegetcategories());
+        dispatch(handlegetcategories({ page: 1, limit: 10 }));
     }, [dispatch]);
 
+    // Load more when end of horizontal list is reached
+    const loadMoreCategories = () => {
+        if (!categoryloading && page < totalPages) {
+            dispatch(handlegetcategories({ page: page + 1, limit: 10 }));
+        }
+    };
 
     const CategoryList = ({ cat, onPress }) => {
+
         return (
             <View key={cat._id}>
-                <TouchableOpacity style={{ margin: 5 }} onPress={onPress}>
+                <TouchableOpacity style={{ margin: 5, flexDirection: 'column', alignItems: "center", justifyContent: 'center' }} onPress={onPress}>
                     <View style={styles.catstyles}>
                         <Image
                             source={{ uri: cat.imageurl }}
                             style={styles.catimg}
                         />
                     </View>
-                    <Text style={{ textAlign: "center", fontSize: 12 }}> {cat.name} </Text>
+                    <Text style={{ textAlign: "center", fontSize: 12 }}> {cat.name.slice(0, 15)} </Text>
                 </TouchableOpacity>
             </View>
         )
@@ -92,39 +68,48 @@ const Homescreen = () => {
                     {/* categories  */}
                     {categoryloading ? (
                         <CatLoading />
-                    ) : (
+                    ) : categories && categories.length > 0 ? (
                         <FlatList
-                            data={categories}
+                            data={[...categories].reverse()}
                             horizontal
                             showsHorizontalScrollIndicator={false}
                             keyExtractor={(item) => item._id}
                             contentContainerStyle={{ paddingHorizontal: 10 }}
+                            onEndReached={loadMoreCategories}
+                            onEndReachedThreshold={0.5}
                             renderItem={({ item }) => (
-                                <CategoryList cat={item}
+                                <CategoryList
+                                    cat={item}
                                     onPress={() =>
                                         navigation.navigate("category", {
                                             categoryId: item._id,
                                             categoryname: item.name,
                                         })
-                                    } />
+                                    }
+                                />
                             )}
                         />
+                    ) : (
+                        /* This shows only in the category section area, not full screen */
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>No categories available</Text>
+                        </View>
                     )}
 
 
                     {/* flash sales  */}
                     <View style={styles.flash}>
                         <View style={styles.flashrow}>
-                            <Text style={styles.flashhead}> Flash Sale </Text>
+                            <Text style={styles.flashhead}> Flash Deals ⚡ </Text>
                             <Text style={styles.flashviewall}> View All </Text>
                         </View>
-
-                        <View style={{ backgroundColor: "#e8fff0", paddingVertical: 30, marginHorizontal: 10 }}>
-                            <Text style={{ textAlign: 'center', color: "red" }}> Coming soon </Text>
+                        <View style={{ marginHorizontal: 10 }}>
+                            <Image source={{ uri: "https://img.freepik.com/free-vector/sale-background-supermarket-template_23-2149378053.jpg" }}
+                                width={"100%"} height={"160"} resizeMode='cover' borderRadius={10} />
                         </View>
                     </View>
 
-                    {/* poojo specials  */}
+                    {/* daily specials  */}
                     <View style={styles.flash}>
                         <View style={styles.flashrow}>
                             <Text style={styles.flashhead}> Daily Special </Text>
@@ -132,23 +117,7 @@ const Homescreen = () => {
                         </View>
                     </View>
 
-                    {/* list of products  */}
-                    <ScrollView horizontal showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingHorizontal: 10 }}>
-                        {products?.map((item, i) => {
-                            return (
-                                <View key={i}>
-                                    <View key={item.id} style={styles.prodimgview}>
-                                        <Image source={{ uri: item.imageUrl }} style={styles.itemimg} />
-                                    </View>
-                                    <View style={styles.prodhead}>
-                                        <Text style={styles.name}> {item.name} </Text>
-                                        <Text style={styles.price}> ₹ {item.price} </Text>
-                                    </View>
-                                </View>
-                            )
-                        })}
-                    </ScrollView>
+
                 </View>
             </ScrollView>
         </View>
@@ -198,25 +167,10 @@ const styles = StyleSheet.create({
         color: "purple"
     },
     itemimg: {
-        width: 150,
-        height: 120,
+        width: 110,
+        height: 90,
         resizeMode: "cover",
         borderRadius: 3
-    },
-    prodimgview: {
-        paddingRight: 12,
-    },
-    prodhead: {
-        paddingTop: 6,
-        gap: 5
-    },
-    name: {
-        fontSize: 15,
-        fontWeight: 500,
-    },
-    price: {
-        fontSize: 17,
-        fontWeight: 600
     },
     catimg: {
         width: 50,
@@ -230,6 +184,17 @@ const styles = StyleSheet.create({
         paddingVertical: 7,
         width: 40,
         alignItems: "center",
-    }
+    },
+    emptyContainer: {
+        paddingVertical: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+    },
+    emptyText: {
+        color: '#666',
+        fontSize: 14,
+        fontStyle: 'italic',
+    },
 
 })

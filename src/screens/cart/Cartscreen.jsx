@@ -105,9 +105,8 @@ const Cartscreen = () => {
             <Text style={styles.emptySubtitle}>Add items to get started</Text>
             <TouchableOpacity
                 style={styles.shopBtn}
-                onPress={() => navigation.goBack()}
-                activeOpacity={0.8}
-            >
+                onPress={() => navigation.navigate("home")}
+                activeOpacity={0.8} >
                 <Text style={styles.shopBtnText}>Continue Shopping</Text>
             </TouchableOpacity>
         </View>

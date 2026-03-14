@@ -2,12 +2,15 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getcategories, handlegetproducts } from "../services/CategoryService";
 
 // get all categories
-export const handlegetcategories = createAsyncThunk("category/fetchcategories", async (_, thunkAPI) => {
+export const handlegetcategories = createAsyncThunk("category/fetchcategories", async ({ page = 1, limit = 10 } = {}, thunkAPI) => {
     try {
-        const resposne = await getcategories();
-        return resposne.data.data;
-    }
-    catch (error) {
+        const response = await getcategories(page, limit);
+        return {
+            data: response.data.data,
+            page: response.data.page,
+            totalPages: response.data.totalPages,
+        };
+    } catch (error) {
         return thunkAPI.rejectWithValue(error.message);
     }
 });
@@ -16,10 +19,14 @@ export const handlegetcategories = createAsyncThunk("category/fetchcategories", 
 // fetch products by category id
 export const fetchProductsByCategory = createAsyncThunk(
     "products/fetchByCategory",
-    async (categoryId, thunkAPI) => {
+    async ({ categoryId, page = 1, limit = 10 }, thunkAPI) => {
         try {
-            const res = await handlegetproducts(categoryId);
-            return res.data.data;
+            const res = await handlegetproducts(categoryId, page, limit);
+            return {
+                data: res.data.data,
+                page: res.data.page,
+                categoryId,
+            };
         } catch (error) {
             return thunkAPI.rejectWithValue(error.message);
         }
@@ -32,11 +39,15 @@ const initialState = {
         categories: [],
         categoryloading: false,
         categoryerror: null,
+        page: 1,
+        totalPages: 1,
     },
     categoryprods: {
         catpro: [],
         catprodloading: false,
         catproderror: null,
+        page: 1,
+        hasMore: true,
     },
 }
 
@@ -53,7 +64,14 @@ const CategorySlice = createSlice({
             })
             .addCase(handlegetcategories.fulfilled, (state, action) => {
                 state.categorydata.categoryloading = false;
-                state.categorydata.categories = action.payload;
+                const { data, page, totalPages } = action.payload;
+                if (page === 1) {
+                    state.categorydata.categories = data; // fresh load
+                } else {
+                    state.categorydata.categories = [...state.categorydata.categories, ...data]; // append
+                }
+                state.categorydata.page = page;
+                state.categorydata.totalPages = totalPages;
             })
             .addCase(handlegetcategories.rejected, (state, action) => {
                 state.categorydata.categoryloading = false;
@@ -67,7 +85,16 @@ const CategorySlice = createSlice({
             })
             .addCase(fetchProductsByCategory.fulfilled, (state, action) => {
                 state.categoryprods.catprodloading = false;
-                state.categoryprods.catpro = action.payload;
+                const { data, page, categoryId } = action.payload;
+
+                if (page === 1) {
+                    state.categoryprods.catpro = data; // fresh load or category switch
+                } else {
+                    state.categoryprods.catpro = [...state.categoryprods.catpro, ...data]; // append
+                }
+
+                state.categoryprods.page = page;
+                state.categoryprods.hasMore = data.length === 10; // if less than limit, no more pages
             })
             .addCase(fetchProductsByCategory.rejected, (state, action) => {
                 state.categoryprods.catprodloading = false;
