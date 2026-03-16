@@ -30,7 +30,7 @@ const CategoryMenu = () => {
     const { categories } = useSelector((state) => state.category.categorydata);
     const cartItems = useSelector((state) => state.cart.items);
 
-    // Initial fetch — page 1 on mount or categoryId change
+    // 1. Fetch products for current category
     useEffect(() => {
         if (categoryId) {
             dispatch(fetchProductsByCategory({ categoryId, page: 1, limit: 10 }))
@@ -38,16 +38,16 @@ const CategoryMenu = () => {
         }
     }, [categoryId]);
 
-
+    // 2. Fetch all categories for modal
     useEffect(() => {
-        dispatch(handlegetcategories());
+        dispatch(handlegetcategories({ page: 1, limit: 50 }));  // ← limit 50 to get all
     }, [dispatch]);
 
+
     useEffect(() => {
-        if (categoryId) {
-            dispatch(fetchProductsByCategory(categoryId));
-        }
-    }, [categoryId]);
+        dispatch(handlegetcategories({ page: 1, limit: 50 }));
+    }, [dispatch]);
+
 
     const [categoriess, setCategoriess] = useState(categoryname);
     const [categoriesModal, setCategoriesModal] = useState(false);
@@ -172,9 +172,11 @@ const CategoryMenu = () => {
                         <EvilIcons name="search" size={26} />
                     </Pressable>
 
-                    <Pressable onPress={() => setCategoriesModal(true)}>
+                    <TouchableOpacity onPress={() => {
+                        setCategoriesModal(true);
+                    }}>
                         <Feather name="filter" size={18} />
-                    </Pressable>
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -207,7 +209,7 @@ const CategoryMenu = () => {
 
             {/* ── Category Modal ── */}
             <CategoryModel
-                categoriesmodel={categoriesModal}
+                categoriesModal={categoriesModal}
                 setCategoriesModal={setCategoriesModal}
                 setCategories={setCategoriess}
                 cat={categories}

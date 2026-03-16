@@ -133,11 +133,13 @@ const Cartscreen = () => {
             {!loading && (
                 <>
                     {/* ── Item count badge ── */}
-                    <View View style={styles.countBadge}>
-                        <Text style={styles.countText}> Get 2 Dairy Products @129</Text>
-                        <Text style={{ color: "#10B981", }} > | </Text>
-                        <Text style={styles.countText}> 129DR (TCA)</Text>
-                    </View>
+                    {items.length > 0 && (
+                        <View style={styles.countBadge}>
+                            <Text style={styles.countText}> Get 2 Dairy Products @129</Text>
+                            <Text style={{ color: "#10B981" }}> | </Text>
+                            <Text style={styles.countText}> 129DR (TCA)</Text>
+                        </View>
+                    )}
 
                     <FlatList
                         data={items}

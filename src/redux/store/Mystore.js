@@ -4,6 +4,7 @@ import CartSlice from '../slices/CartSlice.js';
 import AuthSlice from '../slices/AuthSlice.js';
 import AddressSlice from '../slices/AddressSlice.js';
 import OrderSlice from '../slices/OrderSlice.js';
+import ProductSlice from '../slices/ProductSlice.js';
 
 const Mystore = configureStore({
     reducer: {
@@ -12,6 +13,7 @@ const Mystore = configureStore({
         auth: AuthSlice,
         address: AddressSlice,
         order: OrderSlice,
+        products: ProductSlice,
     }
 });
 

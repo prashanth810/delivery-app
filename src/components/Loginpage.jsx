@@ -31,6 +31,7 @@ const Loginpage = () => {
             console.log(res.token, 'login success');
             await AsyncStorage.setItem("token", res.token);
             Alert.alert("Login Success");
+            navigation.navigate('main', { screen: 'home' });
         } catch (error) {
             console.log(error, 'login failed');
             Alert.alert("Login Failed", error || "Something went wrong");
