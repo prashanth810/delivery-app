@@ -5,10 +5,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { clearCart, selectCartCount, selectCartItems, selectCartTotal } from '../../redux/slices/CartSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import Address from '../address/Address.jsx';
-import { fetchaddress } from '../../redux/slices/AddressSlice.js';
+import { deleteAddress, fetchaddress, makeDefaultAddress } from '../../redux/slices/AddressSlice.js';
 import { handleprofiledata } from '../../redux/slices/AuthSlice.js';
 import { handleCreateOrder, handlecreateRazorpayOrder } from '../../redux/slices/OrderSlice.js';
 import RazorpayCheckout from 'react-native-razorpay';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 const ProccedCheckout = () => {
     const [modelvisible, setModelvisible] = useState(false);
@@ -37,12 +39,17 @@ const ProccedCheckout = () => {
     const clearcart = useSelector(clearCart);
     const loading = useSelector((state) => state.cart.loading);
 
-    const { getalladdress, getaddressloading, getaddresserror
+    const { getmyaddress, getaddressloading, getaddresserror
     } = useSelector((state) => state.address.getaddress);
 
+    console.log(profileuser, 'lllllllllllllllll')
+    console.log(getmyaddress, 'mmmmmmmmmmmmmmmmm')
+
     useEffect(() => {
-        dispatch(fetchaddress());
-    }, [dispatch]);
+        if (profileuser?._id) {
+            dispatch(fetchaddress(profileuser._id));
+        }
+    }, [profileuser?._id]);
 
     const slotoptions = ["ASAP", "Today 6-8PM", "Tommorow 9-11 AM", "Tommorow 6-8 PM"];
 
@@ -50,7 +57,29 @@ const ProccedCheckout = () => {
     const carttotalprice = items?.reduce((sum, item) => sum + (item.price * item.quantity || 0), 0);
 
     // ✅ Fix: .find() to get default address from array (was .isDefault which is wrong)
-    const defaultaddress = getalladdress?.find((item) => item.isDefault === true);
+    const defaultaddress = (getmyaddress || []).find(item => item.isDefault);
+
+    const removeAddress = (id) => {
+        Alert.alert(
+            "Delete Address",
+            "Are you sure you want to delete this address?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: () => dispatch(deleteAddress(id))
+                }
+            ]
+        );
+    };
+
+    const setDefaultAddress = (id) => {
+        dispatch(makeDefaultAddress({
+            id,
+            userId: profileuser?._id
+        }));
+    };
 
     const handlePayment = async () => {
         console.log("payments started")
@@ -197,7 +226,7 @@ const ProccedCheckout = () => {
         <>
             {/* Address */}
             <View style={styles.section}>
-                <Address setModelvisible={setModelvisible} getalladdress={getalladdress} getaddressloading={getaddressloading} getaddresserror={getaddresserror} />
+                <Address setModelvisible={setModelvisible} getmyaddress={getmyaddress} getaddressloading={getaddressloading} getaddresserror={getaddresserror} />
             </View>
 
             {/* Delivery Slot */}
@@ -252,10 +281,11 @@ const ProccedCheckout = () => {
         </>
     );
 
-    const Addressrow = ({ item, isSelected }) => {
+    const Addressrow = ({ item, isSelected, onRemove, onSelect }) => {
         console.log(item, 'ppppppp');
         return (
-            <Pressable style={styles.addrow} >
+            <Pressable style={styles.addrow}
+                onPress={() => onSelect(item._id)} >
                 <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
                     <View style={styles.addresspopmain}>
                         <Ionicons name="home-outline" size={18} color="#16a34a" />
@@ -265,7 +295,10 @@ const ProccedCheckout = () => {
                         <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: 'space-between' }}>
                             <Text style={{ fontSize: 14, fontWeight: "500" }}> {item.type} </Text>
                             {item.isDefault ? (
-                                <View style={[styles.selected, isSelected ? styles.selectedbg : styles.unselectedbg]} />
+                                <View style={[
+                                    styles.selected,
+                                    item.isDefault ? styles.selectedbg : styles.unselectedbg
+                                ]} />
                             ) : ("")}
                         </View>
                         <Text style={{ fontSize: 13, fontWeight: "500", color: "#6b7280" }}> {item?.name} </Text>
@@ -275,11 +308,11 @@ const ProccedCheckout = () => {
                         {/* button for edit , delete */}
                         <View style={styles.btns}>
                             <Pressable>
-                                <Text style={styles.actionbtns}> Edit </Text>
+                                <Text style={styles.actionbtns}> <MaterialIcons name="edit" size={16} color="green" /> </Text>
                             </Pressable>
 
-                            <Pressable>
-                                <Text style={styles.actionbtns}> Delete </Text>
+                            <Pressable onPress={() => onRemove(item._id)}>
+                                <Text style={styles.actionbtns}> <FontAwesome name="trash-o" size={16} color="red" /> </Text>
                             </Pressable>
                         </View>
                     </View>
@@ -384,17 +417,18 @@ const ProccedCheckout = () => {
 
                         <View>
                             <FlatList
-                                data={getalladdress?.filter(a => a.type.toLowerCase().includes(query.toLowerCase()) || a.locality.toLowerCase().includes(query.toLowerCase()))}
+                                data={(getmyaddress || []).filter(a =>
+                                    a?.type?.toLowerCase().includes(query.toLowerCase()) ||
+                                    a?.locality?.toLowerCase().includes(query.toLowerCase())
+                                )}
                                 contentContainerStyle={{ paddingBottom: 90 }}
                                 renderItem={({ item }) => {
                                     return (
                                         <Addressrow
                                             item={item}
-                                            isSelected={selectedaddressId == item?.id}
-                                            onRemove={(id) => removeAddress(id)}
-                                        // onSelect={(id) => {
-                                        //     selectaddress(id)
-                                        // }}
+                                            isSelected={selectedaddressId == item?._id}
+                                            onRemove={removeAddress}
+                                            onSelect={setDefaultAddress}
                                         />
                                     )
                                 }}
@@ -533,12 +567,13 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
     actionbtns: {
-        color: "#9333ea",
-        fontWeight: "semibold",
+        paddingTop: 3,
     },
     btns: {
         flexDirection: "row",
+        alignItems: "center",
         marginTop: 4,
+        gap: 10,
     },
     addnewaddress: {
         borderWidth: 1,

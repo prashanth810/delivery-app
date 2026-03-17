@@ -59,10 +59,9 @@ const Homescreen = () => {
     // ── View More Card (fills the 12th slot) ──
     const ViewMoreCard = () => (
         <TouchableOpacity
-            style={[styles.productCard, styles.viewMoreCard]}
+            style={[styles.productCard, styles.viewMoreCard, { backgroundColor: "#8cb890" }]}
             onPress={() => navigation.navigate("allproducts")}
-            activeOpacity={0.8}
-        >
+            activeOpacity={0.8} >
             <Text style={styles.viewMoreText}>View More <Feather name="arrow-right" size={15} color="#fff" /> </Text>
         </TouchableOpacity>
     );

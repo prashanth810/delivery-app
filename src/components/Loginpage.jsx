@@ -28,8 +28,9 @@ const Loginpage = () => {
         console.log("login started")
         try {
             const res = await dispatch(login(formdata)).unwrap();
-            console.log(res.token, 'login success');
+            console.log(res, 'login success');
             await AsyncStorage.setItem("token", res.token);
+            await AsyncStorage.setItem("userId", res?.data?._id);
             Alert.alert("Login Success");
             navigation.navigate('main', { screen: 'home' });
         } catch (error) {

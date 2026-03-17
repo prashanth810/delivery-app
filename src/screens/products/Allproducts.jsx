@@ -278,17 +278,11 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         backgroundColor: "#eee",
         marginBottom: 6,
-        opacity: 0.55,
-    },
-    sidebarImgActive: {
-        opacity: 1,
-        borderWidth: 1.5,
-        borderColor: "#15803d",
     },
     sidebarName: {
         fontSize: 10,
         textAlign: "center",
-        color: "#bbb",
+        color: "#c3c3c3c",
         fontWeight: "500",
         lineHeight: 13,
     },

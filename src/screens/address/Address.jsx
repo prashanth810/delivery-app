@@ -6,8 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 
-const Address = ({ setModelvisible, getalladdress, getaddressloading, getaddresserror }) => {
-
+const Address = ({ setModelvisible, getmyaddress, getaddressloading, getaddresserror }) => {
 
     const Renderaddress = ({ item }) => {
         return (
@@ -56,6 +55,8 @@ const Address = ({ setModelvisible, getalladdress, getaddressloading, getaddress
         );
     };
 
+    const defaultAddress = (getmyaddress || []).find(item => item.isDefault);
+
     return (
         <View style={styles.container}>
             <Text style={styles.sectionTitle}>Deliver to</Text>
@@ -64,9 +65,16 @@ const Address = ({ setModelvisible, getalladdress, getaddressloading, getaddress
                 <Text style={styles.loadingText}>Loading...</Text>
             ) : (
                 <FlatList
-                    data={getalladdress.filter((item) => item.isDefault === true)}
-                    keyExtractor={(item) => item._id}
+                    data={defaultAddress ? [defaultAddress] : []}
+                    keyExtractor={(item) => item?._id}
                     renderItem={Renderaddress}
+                    ListEmptyComponent={
+                        <View style={{ flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                            <Text> Address not found !</Text>
+                            <TouchableOpacity style={{ paddingHorizontal: 20, paddingVertical: 10, backgroundColor: "#018f45", borderRadius: 4, }} onPress={() => setModelvisible(true)}>
+                                <Text style={{ color: "#fff", fontWeight: "500", fontSize: 12 }}> ADD ADDRESS </Text>
+                            </TouchableOpacity>
+                        </View>}
                 />
             )}
 

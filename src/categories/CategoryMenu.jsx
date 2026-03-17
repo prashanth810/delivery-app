@@ -76,8 +76,15 @@ const CategoryMenu = () => {
     const Rendercatproducts = ({ item }) => {
         const qty = getItemQty(item._id);
 
+        const viewsingleproduct = (productid) => {
+            navigation.navigate("singleproduct", {
+                productid,
+            })
+        };
+
         return (
-            <Pressable style={[styles.card, { width: card_width }]}>
+            <Pressable style={[styles.card, { width: card_width }]}
+                onPress={() => viewsingleproduct(item?._id)}>
                 {/* ── Image Box ── */}
                 <View style={styles.imageBox}>
                     <Image source={{ uri: item?.imageurl }} style={styles.image} />
