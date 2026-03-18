@@ -1,16 +1,16 @@
-import { Alert, Dimensions, FlatList, Image, Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Dimensions, FlatList, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { DarkTheme, useNavigation } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux';
 import { clearCart, selectCartCount, selectCartItems, selectCartTotal } from '../../redux/slices/CartSlice';
-import Ionicons from 'react-native-vector-icons/Ionicons'
 import Address from '../address/Address.jsx';
 import { deleteAddress, fetchaddress, makeDefaultAddress } from '../../redux/slices/AddressSlice.js';
 import { handleprofiledata } from '../../redux/slices/AuthSlice.js';
 import { handleCreateOrder, handlecreateRazorpayOrder } from '../../redux/slices/OrderSlice.js';
 import RazorpayCheckout from 'react-native-razorpay';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
+// ✅ Extracted components 
+import AddressModal from '../../components/AddressModal.jsx';
 
 const ProccedCheckout = () => {
     const [modelvisible, setModelvisible] = useState(false);
@@ -23,24 +23,21 @@ const ProccedCheckout = () => {
 
     const navigation = useNavigation();
     const dispatch = useDispatch();
-    const { profileuser, profileloading, profileerror,
-    } = useSelector((state) => state.auth.profile);
+
+    const { profileuser, profileloading, profileerror } = useSelector((state) => state.auth.profile);
 
     useEffect(() => {
         dispatch(handleprofiledata());
     }, [dispatch]);
-
 
     const cardheight = Dimensions.get("window").height;
 
     const items = useSelector(selectCartItems);
     const total = useSelector(selectCartTotal);
     const count = useSelector(selectCartCount);
-    const clearcart = useSelector(clearCart);
     const loading = useSelector((state) => state.cart.loading);
 
-    const { getmyaddress, getaddressloading, getaddresserror
-    } = useSelector((state) => state.address.getaddress);
+    const { getmyaddress, getaddressloading, getaddresserror } = useSelector((state) => state.address.getaddress);
 
     console.log(profileuser, 'lllllllllllllllll')
     console.log(getmyaddress, 'mmmmmmmmmmmmmmmmm')
@@ -56,7 +53,6 @@ const ProccedCheckout = () => {
     const carttotalitems = items?.reduce((sum, item) => sum + item.quantity, 0);
     const carttotalprice = items?.reduce((sum, item) => sum + (item.price * item.quantity || 0), 0);
 
-    // ✅ Fix: .find() to get default address from array (was .isDefault which is wrong)
     const defaultaddress = (getmyaddress || []).find(item => item.isDefault);
 
     const removeAddress = (id) => {
@@ -119,7 +115,6 @@ const ProccedCheckout = () => {
 
                 console.log("COD orderdata ✅", orderdata);
 
-                // ✅ FIXED: was commented out — now actually dispatching
                 const result = await dispatch(handleCreateOrder(orderdata)).unwrap();
                 console.log("COD order saved ✅", result);
 
@@ -127,20 +122,17 @@ const ProccedCheckout = () => {
                 navigation.navigate("OrderConfirmation", { orderdata: result.order });
 
             } else {
-                // ✅ Step 1: Create Razorpay order from backend
                 const orderData = {
                     amount: carttotalprice,
                     currency: "INR",
                     receipt: `receipt_${Date.now()}`,
                 };
 
-                // ✅ Step 2: unwrap() to get actual data from thunk
                 const razorpayOrder = await dispatch(handlecreateRazorpayOrder(orderData)).unwrap();
                 console.log("razorpayOrder ✅", razorpayOrder);
 
                 const cleanedContact = profileuser?.phone?.replace(/\D/g, "").slice(-10);
 
-                // ✅ Step 3: Razorpay options
                 const options = {
                     description: "FreshToHome Order",
                     image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Blank_Black.svg/200px-Blank_Black.svg.png",
@@ -158,13 +150,11 @@ const ProccedCheckout = () => {
                     retry: { enabled: true, max_count: 3 },
                 };
 
-                // ✅ Step 4: Open Razorpay checkout
                 const data = await RazorpayCheckout.open(options).catch((error) => {
                     console.log(error, "razorpay open error");
                     Alert.alert("Payment Failed", "Razorpay could not open");
                 });
 
-                // ✅ Step 5: Payment success → save full order to DB
                 if (data?.razorpay_payment_id) {
                     const fullOrderData = {
                         items: items.map((item) => ({
@@ -192,7 +182,6 @@ const ProccedCheckout = () => {
 
                     console.log("ONLINE fullOrderData ✅", fullOrderData);
 
-                    // ✅ FIXED: added await + unwrap() — was missing before
                     const result = await dispatch(handleCreateOrder(fullOrderData)).unwrap();
                     console.log("ONLINE order saved ✅", result);
 
@@ -226,7 +215,12 @@ const ProccedCheckout = () => {
         <>
             {/* Address */}
             <View style={styles.section}>
-                <Address setModelvisible={setModelvisible} getmyaddress={getmyaddress} getaddressloading={getaddressloading} getaddresserror={getaddresserror} />
+                <Address
+                    setModelvisible={setModelvisible}
+                    getmyaddress={getmyaddress}
+                    getaddressloading={getaddressloading}
+                    getaddresserror={getaddresserror}
+                />
             </View>
 
             {/* Delivery Slot */}
@@ -281,48 +275,6 @@ const ProccedCheckout = () => {
         </>
     );
 
-    const Addressrow = ({ item, isSelected, onRemove, onSelect }) => {
-        console.log(item, 'ppppppp');
-        return (
-            <Pressable style={styles.addrow}
-                onPress={() => onSelect(item._id)} >
-                <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
-                    <View style={styles.addresspopmain}>
-                        <Ionicons name="home-outline" size={18} color="#16a34a" />
-                    </View>
-
-                    <View style={{ flex: 1, }}>
-                        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: 'space-between' }}>
-                            <Text style={{ fontSize: 14, fontWeight: "500" }}> {item.type} </Text>
-                            {item.isDefault ? (
-                                <View style={[
-                                    styles.selected,
-                                    item.isDefault ? styles.selectedbg : styles.unselectedbg
-                                ]} />
-                            ) : ("")}
-                        </View>
-                        <Text style={{ fontSize: 13, fontWeight: "500", color: "#6b7280" }}> {item?.name} </Text>
-                        <Text style={{ fontSize: 13, color: "#6b7280" }}> {item?.flatNo} </Text>
-                        <Text style={{ fontSize: 13, color: "#6b7280" }}> {item?.landmark}, {item?.locality}- {item?.pincode} </Text>
-
-                        {/* button for edit , delete */}
-                        <View style={styles.btns}>
-                            <Pressable>
-                                <Text style={styles.actionbtns}> <MaterialIcons name="edit" size={16} color="green" /> </Text>
-                            </Pressable>
-
-                            <Pressable onPress={() => onRemove(item._id)}>
-                                <Text style={styles.actionbtns}> <FontAwesome name="trash-o" size={16} color="red" /> </Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                </View>
-
-
-            </Pressable>
-        )
-    }
-
     const ListFooter = () => (
         <View style={{ paddingHorizontal: 10, marginTop: 4 }}>
             <View style={styles.orderdetails}>
@@ -346,7 +298,7 @@ const ProccedCheckout = () => {
         <View style={styles.container}>
             <Text style={styles.header}>Checkout</Text>
 
-            {/* ✅ Single FlatList - no nested ScrollView */}
+            {/* Single FlatList */}
             <FlatList
                 data={items}
                 keyExtractor={(item) => item._id}
@@ -373,14 +325,14 @@ const ProccedCheckout = () => {
                 ListFooterComponent={<ListFooter />}
             />
 
-            {/* ✅ Continue button outside FlatList - always at bottom */}
+            {/* Continue button outside FlatList */}
             <View style={styles.continueWrapper}>
                 <TouchableOpacity
                     style={styles.continueBtn}
                     onPress={handlePayment}
                     disabled={isprocessing}>
                     <View>
-                        <Text style={{ fontSize: 15, fontWeight: "500", color: "#fff", paddingBottom: 4, }}> Procced to Payment  </Text>
+                        <Text style={{ fontSize: 15, fontWeight: "500", color: "#fff", paddingBottom: 4 }}> Procced to Payment </Text>
                         <Text style={styles.continueleft}>
                             {carttotalitems} item{carttotalitems !== 1 ? "s" : ""}
                             {"  •  "}
@@ -393,58 +345,18 @@ const ProccedCheckout = () => {
                 </TouchableOpacity>
             </View>
 
-            <Modal visible={modelvisible} animationType="slide" transparent >
-
-                <View style={styles.mainmodel}>
-                    <View style={styles.submainmodel}>
-                        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 5, }}>
-                            <Text style={{ fontWeight: "bold", fontSize: 16 }}> Select Address </Text>
-                            <Pressable onPress={() => setModelvisible(false)}>
-                                <Ionicons name="close" size={20} color={"#000"} />
-                            </Pressable>
-                        </View>
-
-                        <View style={styles.inprow}>
-                            <Ionicons name="search" size={18} color={"#9ca3af"} />
-                            <TextInput
-                                value={query}
-                                onChange={setQuery}
-                                placeholder='Search Address'
-                                placeholderTextColor={"#ccc"}
-                                style={styles.inpstyle}
-                            />
-                        </View>
-
-                        <View>
-                            <FlatList
-                                data={(getmyaddress || []).filter(a =>
-                                    a?.type?.toLowerCase().includes(query.toLowerCase()) ||
-                                    a?.locality?.toLowerCase().includes(query.toLowerCase())
-                                )}
-                                contentContainerStyle={{ paddingBottom: 90 }}
-                                renderItem={({ item }) => {
-                                    return (
-                                        <Addressrow
-                                            item={item}
-                                            isSelected={selectedaddressId == item?._id}
-                                            onRemove={removeAddress}
-                                            onSelect={setDefaultAddress}
-                                        />
-                                    )
-                                }}
-                            />
-
-                            <Pressable style={styles.addnewaddress} onPress={() => { setModelvisible(false); navigation.navigate("addnewaddress") }}>
-                                <Text style={styles.addbtntext}> + ADD NEW ADDRESS </Text>
-                            </Pressable>
-
-                            <Pressable style={styles.dontbtn} onPress={() => setModelvisible(false)}>
-                                <Text style={styles.donetxt}> DONE </Text>
-                            </Pressable>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+            {/* ✅ AddressModal — fully extracted component */}
+            <AddressModal
+                modelvisible={modelvisible}
+                setModelvisible={setModelvisible}
+                getmyaddress={getmyaddress}
+                query={query}
+                setQuery={setQuery}
+                selectedaddressId={selectedaddressId}
+                removeAddress={removeAddress}
+                setDefaultAddress={setDefaultAddress}
+                navigation={navigation}
+            />
 
         </View>
     )
@@ -490,7 +402,7 @@ const styles = StyleSheet.create({
     orderdettotal: { color: "#292828", fontWeight: "600" },
     orderdettotalammount: { color: "#292828", fontWeight: "700", fontSize: 16 },
 
-    // ✅ Continue button - outside FlatList, always at bottom
+    // Continue button
     continueWrapper: {
         paddingHorizontal: 8,
         paddingVertical: 10,
@@ -507,95 +419,4 @@ const styles = StyleSheet.create({
     },
     continueleft: { color: '#fff', fontSize: 14, fontWeight: '600', paddingHorizontal: 2 },
     continueright: { backgroundColor: "#ffff", fontSize: 15, fontWeight: '600', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 },
-    mainmodel: {
-        flex: 1,
-        backgroundColor: "rgba(0, 0, 0, 0.4)",
-        justifyContent: "flex-end",
-    },
-    submainmodel: {
-        backgroundColor: "#ffff",
-        borderTopRightRadius: 30,
-        borderTopLeftRadius: 30,
-        height: "65%",
-        padding: 15
-    },
-    inprow: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 5,
-        backgroundColor: "#f3f4f6",
-        paddingHorizontal: 7,
-        borderRadius: 8,
-        marginVertical: 6,
-    },
-    inpstyle: {
-        flex: 1,
-        fontSize: 14,
-        color: "#000"
-    },
-    addresspopmain: {
-        width: 40,
-        height: 40,
-        borderRadius: 10,
-        backgroundColor: "#f0fdf4",
-        alignItems: 'center',
-        justifyContent: "center",
-        marginTop: 10,
-    },
-    selected: {
-        width: 13,
-        height: 13,
-        borderRadius: 30,
-    },
-    selectedbg: {
-        backgroundColor: "green",
-    },
-    unselectedbg: {
-        backgroundColor: "transparent",
-    },
-    addrow: {
-        borderWidth: 1,
-        borderColor: "#f3f3f3",
-        backgroundColor: "#fff",
-        borderRadius: 15,
-        padding: 5,
-        marginBottom: 4,
-        shadowColor: "#ccc",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 4,
-        elevation: 4,
-    },
-    actionbtns: {
-        paddingTop: 3,
-    },
-    btns: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 4,
-        gap: 10,
-    },
-    addnewaddress: {
-        borderWidth: 1,
-        borderStyle: "dashed",
-        borderColor: "#9333ea",
-        paddingVertical: 10,
-        borderRadius: 10,
-    },
-    addbtntext: {
-        textAlign: 'center',
-        color: "#9333ea",
-    },
-    dontbtn: {
-        backgroundColor: "green",
-        paddingVertical: 10,
-        marginTop: 15,
-        borderRadius: 10,
-    },
-    donetxt: {
-        textAlign: "center",
-        color: "#ffff",
-        fontSize: 16,
-        fontWeight: "500",
-    },
 })

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { getalladdress, handleCreateAddress, handledeleteadd, handleMakeDefaultAddress } from '../services/AddressService';
+import { getalladdress, handleCreateAddress, handledeleteadd, handleMakeDefaultAddress, handleUpdateAddress } from '../services/AddressService';
 
 // get my addressess
 export const fetchaddress = createAsyncThunk("address/fetch", async (id, thunkAPI) => {
@@ -49,6 +49,18 @@ export const createaddress = createAsyncThunk(
     }
 );
 
+// ✅ update existing address
+export const updateaddress = createAsyncThunk(
+    "address/update",
+    async ({ id, data }, thunkAPI) => {
+        try {
+            const response = await handleUpdateAddress(id, data);
+            return response.data.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.message);
+        }
+    }
+);
 
 
 const initialState = {
@@ -101,6 +113,14 @@ const AddressSlice = createSlice({
             // add new address
             .addCase(createaddress.fulfilled, (state, action) => {
                 state.getaddress.getmyaddress.unshift(action.payload);
+            })
+
+            // ✅ update address — replace updated item in list
+            .addCase(updateaddress.fulfilled, (state, action) => {
+                const updated = action.payload;
+                state.getaddress.getmyaddress = state.getaddress.getmyaddress.map((item) =>
+                    item._id === updated._id ? updated : item
+                );
             })
     },
 });

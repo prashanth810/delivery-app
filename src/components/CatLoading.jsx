@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react'
 
 const CatLoading = () => {
 
-    const loaders = [1, 2, 3, 4, 5, 6, 7, 8]
+    const loaders = Array.from({ length: 8 });
 
     const pulse = useRef(new Animated.Value(0.3)).current
 

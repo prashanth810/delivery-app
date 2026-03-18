@@ -9,8 +9,13 @@ import Feather from 'react-native-vector-icons/Feather';
 const Header = () => {
     const navigation = useNavigation();
 
+
+
     return (
-        <View>
+        <View style={{
+            flexDirection: "column",
+            gap: 3
+        }}>
             <Text style={[styles.textcolor, {
                 paddingTop: 5,
                 fontSize: 15,
@@ -18,7 +23,6 @@ const Header = () => {
             }]}>Delivery Started</Text>
 
             <View>
-
                 <Text style={[styles.textcolor, {
                     fontSize: 20,
                     fontWeight: "800",

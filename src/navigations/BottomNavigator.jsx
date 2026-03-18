@@ -26,27 +26,27 @@ const BottomNavigator = () => {
     return (
         <View style={styles.bottomNav}>
             <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'home' })}>
-                <Icon
-                    name="home-outline"
-                    size={26}
+                <Feather
+                    name="home"
+                    size={20}
                     color={isActive('home') ? "#10B981" : "#3c3c3c"}
                     style={styles.icons}
                 />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'userprofile' })}>
-                <Icon
-                    name="account-outline"
-                    size={26}
+                <Feather
+                    name="user"
+                    size={20}
                     color={isActive('userprofile') ? "#10B981" : "#3c3c3c"}
                     style={styles.icons}
                 />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'cart' })}>
-                <Icon
-                    name="cart"
-                    size={26}
+                <Feather
+                    name="shopping-cart"
+                    size={20}
                     color={isActive('cart') ? "#10B981" : "#3c3c3c"}
                     style={styles.icons}
                 />
@@ -55,7 +55,7 @@ const BottomNavigator = () => {
             <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'orders' })}>
                 <Feather
                     name="box"
-                    size={26}
+                    size={20}
                     color={isActive('orders') ? "#10B981" : "#3c3c3c"}
                     style={styles.icons}
                 />

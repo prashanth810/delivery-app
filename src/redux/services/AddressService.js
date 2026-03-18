@@ -18,6 +18,11 @@ export const handleMakeDefaultAddress = (id, userId) => {
     });
 };
 
+// update address
+export const handleUpdateAddress = (id, data) => {
+    return Baseurl.put(`/address/${id}`, data);
+}
+
 // AddressService.js
 export const handleCreateAddress = (data) => {
     return Baseurl.post("/address/create", data);
