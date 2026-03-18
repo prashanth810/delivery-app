@@ -1,6 +1,7 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useMemo } from 'react';
 import { format } from 'date-fns';
+import { useNavigation } from '@react-navigation/native';
 
 const getStatusStyle = (status) => {
     const key = status?.toLowerCase() || "";
@@ -25,6 +26,8 @@ const getStatusStyle = (status) => {
 };
 
 const OrderCard = ({ item }) => {
+    const navigation = useNavigation();
+
     const statusStyle = getStatusStyle(item.status);
     const itemsCount = useMemo(() => item.items.reduce((acc, it) => acc + (it.quantity || 0), 0), [item.items]);
 
@@ -86,9 +89,9 @@ const OrderCard = ({ item }) => {
                 </View>
             </View>
 
-            <View style={styles.trackmain}>
-                <Text> 📦 Track & Support </Text>
-            </View>
+            <TouchableOpacity style={styles.trackmain} onPress={() => navigation.navigate("ordertracking", { item })}>
+                <Text> 📦 Track Order </Text>
+            </TouchableOpacity>
         </View>
     )
 }
