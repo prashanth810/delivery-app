@@ -77,6 +77,129 @@ const ProccedCheckout = () => {
         }));
     };
 
+    // const handlePayment = async () => {
+    //     console.log("payments started")
+    //     if (!defaultaddress) {
+    //         Alert.alert("No address found", "Please set a default address before placing order.");
+    //         return;
+    //     }
+    //     if (items.length === 0) {
+    //         Alert.alert("Cart is empty");
+    //         return;
+    //     }
+
+    //     setIsprocessing(true);
+    //     try {
+    //         if (payment == "COD") {
+    //             const orderdata = {
+    //                 items: items.map((item) => ({
+    //                     productId: item._id,
+    //                     name: item.name,
+    //                     price: item.price,
+    //                     quantity: item.quantity,
+    //                 })),
+    //                 totalAmount: carttotalprice,
+    //                 address: {
+    //                     name: defaultaddress.name,
+    //                     mobile: defaultaddress.mobile,
+    //                     flatNo: defaultaddress.flatNo,
+    //                     buildingName: defaultaddress.buildingName,
+    //                     street: defaultaddress.street,
+    //                     landmark: defaultaddress.landmark,
+    //                     locality: defaultaddress.locality,
+    //                     pincode: defaultaddress.pincode,
+    //                     type: defaultaddress.type,
+    //                 },
+    //                 paymentMethod: "COD",
+    //             };
+
+    //             console.log("COD orderdata ✅", orderdata);
+
+    //             const result = await dispatch(handleCreateOrder(orderdata)).unwrap();
+    //             console.log("COD order saved ✅", result);
+
+    //             dispatch(clearCart());
+    //             navigation.navigate("OrderConfirmation", { orderdata: result.order });
+
+    //         } else {
+    //             const orderData = {
+    //                 amount: carttotalprice,
+    //                 currency: "INR",
+    //                 receipt: `receipt_${Date.now()}`,
+    //             };
+
+    //             const razorpayOrder = await dispatch(handlecreateRazorpayOrder(orderData)).unwrap();
+    //             console.log("razorpayOrder ✅", razorpayOrder);
+
+    //             const cleanedContact = profileuser?.phone?.replace(/\D/g, "").slice(-10);
+
+    //             const options = {
+    //                 description: "FreshToHome Order",
+    //                 image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Blank_Black.svg/200px-Blank_Black.svg.png",
+    //                 currency: razorpayOrder.currency,
+    //                 key: "rzp_test_SQEc80b35A7O2k",
+    //                 amount: razorpayOrder.amount.toString(),
+    //                 name: "FreshToHome",
+    //                 order_id: razorpayOrder.razorpayOrderId,
+    //                 prefill: {
+    //                     email: profileuser?.email || "test@example.com",
+    //                     contact: cleanedContact,
+    //                     name: profileuser?.name || "Test User",
+    //                 },
+    //                 theme: { color: "#16a34a" },
+    //                 retry: { enabled: true, max_count: 3 },
+    //             };
+
+    //             const data = await RazorpayCheckout.open(options).catch((error) => {
+    //                 console.log(error, "razorpay open error");
+    //                 Alert.alert("Payment Failed", "Razorpay could not open");
+    //             });
+
+    //             if (data?.razorpay_payment_id) {
+    //                 const fullOrderData = {
+    //                     items: items.map((item) => ({
+    //                         productId: item._id,
+    //                         name: item.name,
+    //                         price: item.price,
+    //                         quantity: item.quantity,
+    //                     })),
+    //                     totalAmount: carttotalprice,
+    //                     address: {
+    //                         name: defaultaddress.name,
+    //                         mobile: defaultaddress.mobile,
+    //                         flatNo: defaultaddress.flatNo,
+    //                         buildingName: defaultaddress.buildingName,
+    //                         street: defaultaddress.street,
+    //                         landmark: defaultaddress.landmark,
+    //                         locality: defaultaddress.locality,
+    //                         pincode: defaultaddress.pincode,
+    //                         type: defaultaddress.type,
+    //                     },
+    //                     paymentMethod: "ONLINE",
+    //                     paymentId: data.razorpay_payment_id,
+    //                     razorpayOrderId: razorpayOrder.razorpayOrderId,
+    //                 };
+
+    //                 console.log("ONLINE fullOrderData ✅", fullOrderData);
+
+    //                 const result = await dispatch(handleCreateOrder(fullOrderData)).unwrap();
+    //                 console.log("ONLINE order saved ✅", result);
+
+    //                 dispatch(clearCart());
+    //                 navigation.navigate("OrderConfirmation", { orderdata: result.order });
+    //             }
+    //         }
+    //     }
+    //     catch (error) {
+    //         console.error("payment error", error);
+    //         Alert.alert("Failed to process order", error?.message || "Something went wrong");
+    //     }
+    //     finally {
+    //         setIsprocessing(false);
+    //     }
+    // }
+
+
     const handlePayment = async () => {
         console.log("payments started")
         if (!defaultaddress) {
@@ -111,6 +234,7 @@ const ProccedCheckout = () => {
                         type: defaultaddress.type,
                     },
                     paymentMethod: "COD",
+                    paymentStatus: "Pending",   // ✅ COD = Pending
                 };
 
                 console.log("COD orderdata ✅", orderdata);
@@ -122,6 +246,7 @@ const ProccedCheckout = () => {
                 navigation.navigate("OrderConfirmation", { orderdata: result.order });
 
             } else {
+                // Step 1: Create Razorpay order from backend
                 const orderData = {
                     amount: carttotalprice,
                     currency: "INR",
@@ -150,11 +275,18 @@ const ProccedCheckout = () => {
                     retry: { enabled: true, max_count: 3 },
                 };
 
-                const data = await RazorpayCheckout.open(options).catch((error) => {
-                    console.log(error, "razorpay open error");
-                    Alert.alert("Payment Failed", "Razorpay could not open");
-                });
+                let data;
+                try {
+                    data = await RazorpayCheckout.open(options);
+                } catch (razorpayError) {
+                    // ✅ User cancelled or payment failed
+                    console.log("Razorpay cancelled/failed:", razorpayError);
+                    Alert.alert("Payment Cancelled", "You cancelled the payment. Please try again.");
+                    setIsprocessing(false);
+                    return;
+                }
 
+                // Step 2: Payment success → save full order to DB
                 if (data?.razorpay_payment_id) {
                     const fullOrderData = {
                         items: items.map((item) => ({
@@ -178,6 +310,7 @@ const ProccedCheckout = () => {
                         paymentMethod: "ONLINE",
                         paymentId: data.razorpay_payment_id,
                         razorpayOrderId: razorpayOrder.razorpayOrderId,
+                        paymentStatus: "Paid",   // ✅ ONLINE success = Paid
                     };
 
                     console.log("ONLINE fullOrderData ✅", fullOrderData);
