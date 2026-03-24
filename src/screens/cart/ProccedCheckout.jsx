@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     continueWrapper: {
         paddingHorizontal: 8,
         paddingVertical: 10,
-        marginBottom: 50,
+        marginBottom: 72,
     },
     continueBtn: {
         backgroundColor: '#0B983E',

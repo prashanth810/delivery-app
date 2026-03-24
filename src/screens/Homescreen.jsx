@@ -23,9 +23,7 @@ const Homescreen = () => {
 
 
     const handlesingleproduct = (id) => {
-        navigation.navigate("singleproduct", {
-            productid: id,
-        });
+        navigation.navigate("products", { screen: "singleproduct", params: { productid: id } })
     };
 
     useEffect(() => {
@@ -60,7 +58,7 @@ const Homescreen = () => {
     const ViewMoreCard = () => (
         <TouchableOpacity
             style={[styles.productCard, styles.viewMoreCard, { backgroundColor: "#8cb890" }]}
-            onPress={() => navigation.navigate("allproducts")}
+            onPress={() => navigation.navigate('products', { screen: 'allproducts' })}
             activeOpacity={0.8} >
             <Text style={styles.viewMoreText}>View More <Feather name="arrow-right" size={15} color="#fff" /> </Text>
         </TouchableOpacity>

@@ -1,65 +1,70 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation, useNavigationState } from '@react-navigation/native';
+import React, { useRef, useEffect } from 'react';
+import { View, TouchableOpacity, Animated, StyleSheet, Dimensions } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useNavigation, useNavigationState } from '@react-navigation/native';
+
+const TABS = [
+    { name: 'home', icon: 'home' },
+    { name: 'userprofile', icon: 'user' },
+    { name: 'cart', icon: 'shopping-cart' },
+    { name: 'orders', icon: 'box' },
+];
+
+const PILL_SIZE = 40;
+const TAB_WIDTH = (Dimensions.get('window').width - 40) / TABS.length;
+const getOffset = (index) => index * TAB_WIDTH + (TAB_WIDTH / 2) - (PILL_SIZE / 2);
 
 const BottomNavigator = () => {
     const navigation = useNavigation();
 
-    // ✅ FIX: Get the actual current screen name, even if nested
+    // ✅ Initialize pill at index 0 (home) position
+    const pillX = useRef(new Animated.Value(getOffset(0))).current;
+
     const currentRoute = useNavigationState(state => {
-        // Get the active route in the navigation state
         const route = state.routes[state.index];
-
-        // If this route has nested state (like MainStackNav), get the nested route
         if (route.state) {
-            const nestedRoute = route.state.routes[route.state.index];
-            return nestedRoute.name;
+            return route.state.routes[route.state.index].name;
         }
-
         return route.name;
     });
 
-    const isActive = (screen) => currentRoute === screen;
+    const activeIndex = TABS.findIndex(t => t.name === currentRoute);
+
+    useEffect(() => {
+        Animated.spring(pillX, {
+            toValue: getOffset(activeIndex < 0 ? 0 : activeIndex),
+            useNativeDriver: true,
+            tension: 60,
+            friction: 10,
+        }).start();
+    }, [activeIndex]);
 
     return (
         <View style={styles.bottomNav}>
-            <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'home' })}>
-                <Feather
-                    name="home"
-                    size={20}
-                    color={isActive('home') ? "#10B981" : "#3c3c3c"}
-                    style={styles.icons}
-                />
-            </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'userprofile' })}>
-                <Feather
-                    name="user"
-                    size={20}
-                    color={isActive('userprofile') ? "#10B981" : "#3c3c3c"}
-                    style={styles.icons}
-                />
-            </TouchableOpacity>
+            {/* Sliding circle pill */}
+            <Animated.View
+                style={[styles.pill, { transform: [{ translateX: pillX }] }]}
+            />
 
-            <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'cart' })}>
-                <Feather
-                    name="shopping-cart"
-                    size={20}
-                    color={isActive('cart') ? "#10B981" : "#3c3c3c"}
-                    style={styles.icons}
-                />
-            </TouchableOpacity>
+            {TABS.map((tab, i) => {
+                // ✅ Treat index 0 as active when no route matches (initial load)
+                const isActive = activeIndex < 0 ? i === 0 : activeIndex === i;
+                return (
+                    <TouchableOpacity
+                        key={tab.name}
+                        style={styles.tabBtn}
+                        onPress={() => navigation.navigate('main', { screen: tab.name })}
+                    >
+                        <Feather
+                            name={tab.icon}
+                            size={20}
+                            color={isActive ? '#fff' : '#888'}
+                        />
+                    </TouchableOpacity>
+                );
+            })}
 
-            <TouchableOpacity onPress={() => navigation.navigate('main', { screen: 'orders' })}>
-                <Feather
-                    name="box"
-                    size={20}
-                    color={isActive('orders') ? "#10B981" : "#3c3c3c"}
-                    style={styles.icons}
-                />
-            </TouchableOpacity>
         </View>
     );
 };
@@ -69,33 +74,33 @@ export default BottomNavigator;
 const styles = StyleSheet.create({
     bottomNav: {
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
+        bottom: 20,
+        left: 20,
+        right: 20,
+        borderRadius: 40,
         height: 54,
-        backgroundColor: "white",
+        backgroundColor: 'white',
         flexDirection: 'row',
-        justifyContent: 'space-around',
         alignItems: 'center',
-
-        // 🔥 IMPORTANT
-        elevation: 20,     // Android shadow
-        zIndex: 999,       // iOS stacking
+        elevation: 20,
+        zIndex: 999,
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 10 },
         shadowRadius: 10,
+        overflow: 'hidden',
     },
-
-    centerBtn: {
-        width: 50,
-        height: 50,
-        borderRadius: 30,
-        backgroundColor: "green",
-        justifyContent: 'center',
+    pill: {
+        position: 'absolute',
+        width: PILL_SIZE,
+        height: PILL_SIZE,
+        borderRadius: PILL_SIZE / 2,
+        backgroundColor: '#10B981',
+    },
+    tabBtn: {
+        flex: 1,
+        height: 54,
         alignItems: 'center',
-    },
-    icons: {
-        paddingBottom: 14,
+        justifyContent: 'center',
     },
 });

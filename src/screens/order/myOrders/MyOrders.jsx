@@ -47,7 +47,7 @@ const MyOrders = () => {
                     data={getorderdata}
                     keyExtractor={(item) => item._id}
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 50, paddingTop: 6 }}
+                    contentContainerStyle={{ paddingBottom: 66, paddingTop: 6 }}
                     renderItem={({ item }) => <OrderCard item={item} />}
                     refreshControl={
                         <RefreshControl

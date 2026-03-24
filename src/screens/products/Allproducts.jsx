@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ActivityIndicator, FlatList, Image, Pressable, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
@@ -9,10 +9,14 @@ import Categorymenuskeliton from '../../components/Categorymenuskeliton.jsx';
 
 const Allproductsbycategory = () => {
     const [activeCategoryId, setActiveCategoryId] = useState(null);
+
+    // ✅ track if products have loaded at least once
+    const hasLoadedProducts = useRef(false);
+
     const navigation = useNavigation();
     const dispatch = useDispatch();
 
-    const { categories, categoryloading, page, totalPages } = useSelector((state) => state.category.categorydata);
+    const { categories, categoryloading } = useSelector((state) => state.category.categorydata);
     const { catpro, catprodloading } = useSelector((state) => state.category.categoryprods);
     const cartItems = useSelector((state) => state.cart.items);
 
@@ -20,7 +24,7 @@ const Allproductsbycategory = () => {
         dispatch(handlegetcategories({ page: 1, limit: 20 }));
     }, [dispatch]);
 
-    // ── Auto select first category ──
+    // auto select first category
     useEffect(() => {
         if (categories?.length > 0 && !activeCategoryId) {
             const firstId = categories[0]._id;
@@ -29,12 +33,21 @@ const Allproductsbycategory = () => {
         }
     }, [categories]);
 
+    // ✅ once products load for first time, mark it done
+    useEffect(() => {
+        if (!catprodloading && catpro?.length > 0) {
+            hasLoadedProducts.current = true;
+        }
+    }, [catprodloading, catpro]);
+
     const getItemQty = (productId) => {
         const found = cartItems.find((i) => i._id === productId);
         return found ? found.quantity : 0;
     };
 
     const handleCategoryPress = (id) => {
+        // ✅ reset flag so skeleton shows when switching category
+        hasLoadedProducts.current = false;
         setActiveCategoryId(id);
         dispatch(fetchProductsByCategory({ categoryId: id, page: 1, limit: 20 }));
     };
@@ -78,11 +91,17 @@ const Allproductsbycategory = () => {
     // ── Right Product Card ──
     const CatProductCard = ({ item }) => {
         const qty = getItemQty(item._id);
+
+        const handleviewproduct = (id) => {
+            navigation.navigate("products", { screen: "singleproduct", params: { productid: id } })
+        };
+
         return (
             <TouchableOpacity
                 style={styles.catProductCard}
-                onPress={() => navigation.navigate("singleproduct", { productid: item._id })}
-                activeOpacity={0.9} >
+                onPress={() => handleviewproduct(item?._id)}
+                activeOpacity={0.9}
+            >
                 <View style={styles.catProductImgBox}>
                     <Image source={{ uri: item.imageurl }} style={styles.catProductImg} resizeMode="cover" />
                     {item.stock === 0 && (
@@ -121,35 +140,33 @@ const Allproductsbycategory = () => {
         );
     };
 
+    // ✅ only show skeleton if loading AND products never loaded yet for this category
+    const showProductSkeleton = catprodloading && !hasLoadedProducts.current;
+
     return (
         <View style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="#fff" translucent={false} />
 
-            {/* ── Header ── */}
+            {/* Header */}
             <View style={styles.header}>
                 <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Feather name="arrow-left" size={22} color="#1a1a1a" />
                 </Pressable>
                 <Text style={styles.headerTitle}>All Products</Text>
-                <Pressable
-                    onPress={() => navigation.navigate("cart")}
-                    style={styles.cartBtn}
-                >
+                <Pressable onPress={() => navigation.navigate("cart")} style={styles.cartBtn}>
                     <Feather name="shopping-cart" size={20} color="#1a1a1a" />
                     {cartItems.length > 0 && (
                         <View style={styles.cartBadge}>
-                            <Text style={styles.cartBadgeText}>
-                                {cartItems.length}
-                            </Text>
+                            <Text style={styles.cartBadgeText}>{cartItems.length}</Text>
                         </View>
                     )}
                 </Pressable>
             </View>
 
-            {/* ── Body: Sidebar + Products ── */}
+            {/* Body */}
             <View style={styles.body}>
 
-                {/* ── Left Sidebar ── */}
+                {/* Left Sidebar */}
                 <View style={styles.sidebar}>
                     {categoryloading ? (
                         <SidebarSkeleton />
@@ -164,9 +181,10 @@ const Allproductsbycategory = () => {
                     )}
                 </View>
 
-                {/* ── Right Products ── */}
+                {/* Right Products */}
                 <View style={styles.productsArea}>
-                    {catprodloading ? (
+                    {/* ✅ skeleton only on first load, not on cart update */}
+                    {showProductSkeleton ? (
                         <Categorymenuskeliton />
                     ) : catpro?.length === 0 ? (
                         <View style={styles.centerBox}>
@@ -184,6 +202,7 @@ const Allproductsbycategory = () => {
                         />
                     )}
                 </View>
+
             </View>
         </View>
     );
@@ -196,8 +215,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#f5f5f5",
     },
-
-    // ── Header ──
     header: {
         flexDirection: "row",
         alignItems: "center",
@@ -238,14 +255,10 @@ const styles = StyleSheet.create({
         fontSize: 9,
         fontWeight: "700",
     },
-
-    // ── Body ──
     body: {
         flex: 1,
         flexDirection: "row",
     },
-
-    // ── Left Sidebar ──
     sidebar: {
         width: 82,
         backgroundColor: "#f7f7f7",
@@ -279,10 +292,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#eee",
         marginBottom: 6,
     },
+    sidebarImgActive: {},
     sidebarName: {
         fontSize: 10,
         textAlign: "center",
-        color: "#c3c3c3c",
+        color: "#999",
         fontWeight: "500",
         lineHeight: 13,
     },
@@ -290,15 +304,13 @@ const styles = StyleSheet.create({
         color: "#15803d",
         fontWeight: "700",
     },
-
-    // ── Right Products ──
     productsArea: {
         flex: 1,
         backgroundColor: "#f5f5f5",
     },
     productsContent: {
         padding: 8,
-        paddingBottom: 60,
+        paddingBottom: 80,
     },
     catColumnWrapper: {
         gap: 5,
@@ -360,8 +372,6 @@ const styles = StyleSheet.create({
         fontWeight: "800",
         color: "#15803d",
     },
-
-    // ── ADD / QTY ──
     addBtn: {
         borderWidth: 1.5,
         borderColor: "#10B981",
@@ -399,8 +409,6 @@ const styles = StyleSheet.create({
         minWidth: 16,
         textAlign: "center",
     },
-
-    // ── Empty / Loading ──
     centerBox: {
         flex: 1,
         alignItems: "center",

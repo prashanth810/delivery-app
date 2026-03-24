@@ -190,10 +190,6 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
 
-    scrollContent: {
-        paddingBottom: vscale(40),
-    },
-
     // ── Image ──
     imgBox: {
         backgroundColor: "#fff",
@@ -212,6 +208,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: scale(16),
         paddingVertical: vscale(18),
         marginTop: scale(8),
+        paddingBottom: scale(90),
     },
     productName: {
         fontSize: mscale(17),
@@ -340,7 +337,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-around",
         backgroundColor: "#f9fafb",
         borderRadius: scale(12),
-        paddingVertical: vscale(16),
+        paddingVertical: vscale(12),
         borderWidth: 1,
         borderColor: "#f0f0f0",
     },

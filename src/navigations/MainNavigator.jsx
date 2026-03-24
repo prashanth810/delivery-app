@@ -13,13 +13,18 @@ import MyOrders from '../screens/order/myOrders/MyOrders.jsx';
 import Allproducts from '../screens/products/Allproducts.jsx';
 import Singleproduct from '../screens/products/Singleproduct.jsx';
 import Trackorderdetails from '../screens/order/trackOrder/Trackorderdetails.jsx';
+import Allproductsnavigator from '../navigations/Allproductsnavigator.jsx';
 
 const Stack = createNativeStackNavigator();
 
 const MainNavigator = () => {
     return (
         <View style={Styles.container}>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Navigator screenOptions={{
+                headerShown: false,
+                animation: "slide_from_right",
+                animationDuration: 300,
+            }}>
                 <Stack.Screen name='home' component={Homescreen} />
                 <Stack.Screen name='category' component={CategoryMenu} />
                 <Stack.Screen name='userprofile' component={UserProfile} />
@@ -29,10 +34,7 @@ const MainNavigator = () => {
                 <Stack.Screen name='OrderConfirmation' component={OrderConfirmation} />
 
                 <Stack.Screen name='orders' component={MyOrders} />
-
-                <Stack.Screen name='allproducts' component={Allproducts} />
-                <Stack.Screen name='singleproduct' component={Singleproduct} />
-                <Stack.Screen name='ordertracking' component={Trackorderdetails} />
+                <Stack.Screen name='products' component={Allproductsnavigator} />
 
 
             </Stack.Navigator>

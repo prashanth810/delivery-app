@@ -38,7 +38,7 @@ export default CartModelfooter
 const styles = StyleSheet.create({
     container: {
         position: "absolute",
-        bottom: 60,
+        bottom: 78,
         backgroundColor: "#10B981",
         left: 5,
         right: 5,

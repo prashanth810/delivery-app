@@ -3,195 +3,187 @@ import {
     Image, TouchableOpacity, Pressable,
     ActivityIndicator
 } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import { useNavigation } from '@react-navigation/native'
-import { fetchCart, decrementQty, removeFromCart, clearCart, selectCartItems, selectCartTotal, selectCartCount, incrementQty } from '../../redux/slices/CartSlice';
+import { fetchCart, decrementQty, removeFromCart, incrementQty, selectCartItems, selectCartTotal, selectCartCount } from '../../redux/slices/CartSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CartModelfooter from '../../categories/CartModelfooter'
 import SimilarProducts from './SimilarProducts.jsx'
 
-const Cartscreen = () => {
-    const dispatch = useDispatch()
-    const navigation = useNavigation()
+// ==============================
+// Cart Item Card — outside main component
+// ✅ prevents re-render on every state change
+// ==============================
+const RenderCartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
+    const navigation = useNavigation();
 
-    const items = useSelector(selectCartItems)
-    console.log(items, 'iiiiiiiiiiiiiii')
-    const total = useSelector(selectCartTotal)
-    const count = useSelector(selectCartCount)
-    const loading = useSelector((state) => state.cart.loading);
+    const handleviewproduct = (id) => {
+        navigation.navigate("products", { screen: "singleproduct", params: { productid: id } })
+    };
 
-    // Load cart from AsyncStorage when screen mounts
-    useEffect(() => {
-        dispatch(fetchCart())
-    }, [dispatch])
+    return (
+        <View style={styles.itemCard}>
 
-    const handleIncrement = (id) => dispatch(incrementQty(id))
-    const handleDecrement = (id) => dispatch(decrementQty(id))
-    const handleRemove = (id) => dispatch(removeFromCart(id))
+            {/* Left: Info */}
+            <View style={styles.itemInfo}>
+                <Text style={styles.itemName} numberOfLines={2}>{item?.name}</Text>
+                <Text style={styles.itemSubtotal}>₹{item.price * item.quantity}</Text>
 
-    const handlecheckout = () => {
-        navigation.navigate("checkout");
-    }
+                <View style={styles.delremove}>
+                    <View style={styles.delivery}>
+                        <Ionicons name="bicycle-sharp" color="#3c3c3c" size={16} />
+                        <Text style={styles.deliveryText}> Today 15 minutes</Text>
+                    </View>
 
-    // ── Single cart item row ──
-    const RenderCartItem = ({ item }) => (
-        <>
-            <View style={styles.itemCard}>
+                    <TouchableOpacity onPress={() => onRemove(item._id)} style={styles.deleteBtn}>
+                        <Icon name="trash-can-outline" size={16} color="#c2c2c2" />
+                        <Text style={styles.removeText}> Remove </Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
 
-                {/* Info */}
-                <View style={styles.itemInfo}>
-                    <Text style={styles.itemName} numberOfLines={2}>{item?.name}</Text>
+            {/* Right: Image + Qty */}
+            <View>
+                <TouchableOpacity onPress={() => handleviewproduct(item?._id)}>
+                    <Image source={{ uri: item?.imageurl }} style={styles.itemImage} />
+                </TouchableOpacity>
 
-                    {/* subtotal per item */}
-                    <Text style={styles.itemSubtotal}>₹{item.price * item.quantity}</Text>
+                <View style={styles.itemRight}>
+                    <View style={styles.qtyControl}>
+                        <TouchableOpacity
+                            style={styles.qtyBtn}
+                            onPress={() => onDecrement(item._id)}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.qtyBtnText}>−</Text>
+                        </TouchableOpacity>
 
-                    <View style={styles.delremove}>
-                        <View style={styles.delivery}>
-                            <Ionicons
-                                name="bicycle-sharp" color="#3c3c3c" size={16} />
-                            <Text style={{ color: "#c2c2c2", fontSize: 13 }}> Today 15 minuates</Text>
-                        </View>
+                        <Text style={styles.qtyNumber}>{item.quantity}</Text>
 
-                        <TouchableOpacity onPress={() => handleRemove(item._id)} style={styles.deleteBtn}>
-                            <Icon name="trash-can-outline" size={16}
-                                color="#c2c2c2" />
-                            <Text style={{ color: "#c2c2c2", fontSize: 12 }}> Remove </Text>
+                        <TouchableOpacity
+                            style={styles.qtyBtn}
+                            onPress={() => onIncrement(item._id)}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.qtyBtnText}>+</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
-
-                <View>
-                    {/* Product Image */}
-                    <Image source={{ uri: item?.imageurl }} style={styles.itemImage} />
-
-                    {/* Right: qty + delete */}
-                    <View style={styles.itemRight}>
-                        {/* — qty + controls */}
-                        <View style={styles.qtyControl}>
-                            <TouchableOpacity
-                                style={styles.qtyBtn}
-                                onPress={() => handleDecrement(item._id)}
-                                activeOpacity={0.8}>
-                                <Text style={styles.qtyBtnText}>−</Text>
-                            </TouchableOpacity>
-                            <Text style={styles.qtyNumber}>{item.quantity}</Text>
-                            <TouchableOpacity
-                                style={styles.qtyBtn}
-                                onPress={() => handleIncrement(item._id)}
-                                activeOpacity={0.8} >
-                                <Text style={styles.qtyBtnText}>+</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
             </View>
-        </>
-    )
 
-    // ── Empty cart view ──
-    const EmptyCart = () => (
-        <View style={styles.emptyContainer}>
-            <Icon name="cart-off" size={80} color="#ddd" />
-            <Text style={styles.emptyTitle}>Your cart is empty</Text>
-            <Text style={styles.emptySubtitle}>Add items to get started</Text>
-            <TouchableOpacity
-                style={styles.shopBtn}
-                onPress={() => navigation.navigate("home")}
-                activeOpacity={0.8} >
-                <Text style={styles.shopBtnText}>Continue Shopping</Text>
-            </TouchableOpacity>
         </View>
     )
+});
+
+
+// ==============================
+// Empty Cart View — outside main component
+// ==============================
+const EmptyCart = ({ onShop }) => (
+    <View style={styles.emptyContainer}>
+        <Icon name="cart-off" size={80} color="#ddd" />
+        <Text style={styles.emptyTitle}>Your cart is empty</Text>
+        <Text style={styles.emptySubtitle}>Add items to get started</Text>
+        <TouchableOpacity style={styles.shopBtn} onPress={onShop} activeOpacity={0.8}>
+            <Text style={styles.shopBtnText}>Continue Shopping</Text>
+        </TouchableOpacity>
+    </View>
+);
+
+
+// ==============================
+// Main Cart Screen
+// ==============================
+const Cartscreen = () => {
+    const dispatch = useDispatch();
+    const navigation = useNavigation();
+
+    const items = useSelector(selectCartItems);
+    const total = useSelector(selectCartTotal);
+    const count = useSelector(selectCartCount);
+    const loading = useSelector((state) => state.cart.loading);
+
+    // load cart on mount
+    useEffect(() => {
+        dispatch(fetchCart());
+    }, [dispatch]);
+
+    // ✅ useCallback prevents new function on every render
+    const handleIncrement = useCallback((id) => dispatch(incrementQty(id)), [dispatch]);
+    const handleDecrement = useCallback((id) => dispatch(decrementQty(id)), [dispatch]);
+    const handleRemove = useCallback((id) => dispatch(removeFromCart(id)), [dispatch]);
+
+    const handleCheckout = () => navigation.navigate("checkout");
+    const handleShop = () => navigation.navigate("products");
 
     return (
         <View style={styles.container}>
-            {/* ── Header ── */}
+
+            {/* Header */}
             <View style={styles.header}>
                 <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Icon name="arrow-left" size={24} color="#1a1a1a" />
                 </Pressable>
-
-                <Text style={styles.headerTitle}> Your Cart </Text>
+                <Text style={styles.headerTitle}>Your Cart</Text>
                 <Text />
-                {/* {items.length > 0 && (
-                    <TouchableOpacity onPress={handleClearAll}>
-                        <Text style={styles.clearText}>Clear All</Text>
-                    </TouchableOpacity>
-                )} */}
             </View>
 
-            {/* ── Loading ── */}
+            {/* Loading */}
             {loading && (
                 <View style={styles.loadingBox}>
                     <ActivityIndicator size="large" color="purple" />
                 </View>
             )}
 
-            {/* ── Cart Items List ── */}
+            {/* Cart List */}
             {!loading && (
                 <>
-                    {/* ── Item count badge ── */}
+                    {/* Promo banner */}
                     {items.length > 0 && (
                         <View style={styles.countBadge}>
-                            <Text style={styles.countText}> Get 2 Dairy Products @129</Text>
+                            <Text style={styles.countText}>Get 2 Dairy Products @129</Text>
                             <Text style={{ color: "#10B981" }}> | </Text>
-                            <Text style={styles.countText}> 129DR (TCA)</Text>
+                            <Text style={styles.countText}>129DR (TCA)</Text>
                         </View>
                     )}
 
                     <FlatList
                         data={items}
                         keyExtractor={(item, i) => item._id || String(i)}
-                        renderItem={RenderCartItem}
+                        // ✅ renderItem uses useCallback so no unnecessary re-renders
+                        renderItem={({ item }) => (
+                            <RenderCartItem
+                                item={item}
+                                onIncrement={handleIncrement}
+                                onDecrement={handleDecrement}
+                                onRemove={handleRemove}
+                            />
+                        )}
                         contentContainerStyle={items.length === 0 ? { flex: 1 } : { paddingBottom: 160 }}
                         showsVerticalScrollIndicator={false}
-                        ListEmptyComponent={<EmptyCart />}
+                        ListEmptyComponent={<EmptyCart onShop={handleShop} />}
                         ItemSeparatorComponent={() => <View style={styles.separator} />}
                         ListFooterComponent={items.length > 0 ? <SimilarProducts items={items} /> : null}
                     />
                 </>
             )}
 
-            {/* ── Bottom Checkout Bar ── */}
-            {/* {items.length > 0 && (
-                <View style={styles.bottomBar}>
-                    <View style={styles.billRow}>
-                        <Text style={styles.billLabel}>Subtotal ({count} items)</Text>
-                        <Text style={styles.billValue}>₹{total}</Text>
-                    </View>
-                    <View style={styles.billRow}>
-                        <Text style={styles.billLabel}>Delivery Fee</Text>
-                        <Text style={[styles.billValue, { color: "green" }]}>FREE</Text>
-                    </View>
-                    <View style={[styles.billRow, styles.totalRow]}>
-                        <Text style={styles.totalLabel}>Total</Text>
-                        <Text style={styles.totalValue}>₹{total}</Text>
-                    </View>
-
-                    <TouchableOpacity style={styles.checkoutBtn} activeOpacity={0.85}>
-                        <Icon name="lightning-bolt" size={18} color="#fff" />
-                        <Text style={styles.checkoutText}>Proceed to Checkout</Text>
-                    </TouchableOpacity>
-                </View>
-            )} */}
-
-            <CartModelfooter text={"Procced To Checkout"} onPress={handlecheckout} />
+            {/* Checkout Button */}
+            <CartModelfooter text={"Proceed To Checkout"} onPress={handleCheckout} />
 
         </View>
-    )
-}
+    );
+};
 
-export default Cartscreen
+export default Cartscreen;
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#f8f8f8",
     },
-
-    // ── Header ──
     header: {
         flexDirection: "row",
         alignItems: "center",
@@ -210,13 +202,6 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         color: "#1a1a1a",
     },
-    clearText: {
-        fontSize: 13,
-        color: "#e53935",
-        fontWeight: "600",
-    },
-
-    // ── Count badge ──
     countBadge: {
         flexDirection: "row",
         alignItems: "center",
@@ -232,27 +217,16 @@ const styles = StyleSheet.create({
         borderStyle: "dashed",
         borderColor: "#10B981",
     },
-
-    countText: {
-        fontSize: 12,
-        fontWeight: "500",
-        color: "#065f46",
-        textAlign: "center",
-    },
     countText: {
         fontSize: 13,
         color: "#10B981",
         fontWeight: "600",
     },
-
-    // ── Loading ──
     loadingBox: {
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
     },
-
-    // ── Cart item card ──
     itemCard: {
         flexDirection: "row",
         backgroundColor: "#fff",
@@ -270,10 +244,10 @@ const styles = StyleSheet.create({
     itemImage: {
         width: 70,
         height: 70,
-        margin: "auto",
         borderRadius: 10,
         backgroundColor: "#f5f5f5",
         resizeMode: "cover",
+        alignSelf: "center",
     },
     itemInfo: {
         flex: 1,
@@ -281,25 +255,31 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     itemName: {
-        fontSize: 15,
+        fontSize: 13,
         fontWeight: "500",
-        color: "#1a1a1a",
+        color: "#636262",
         marginBottom: 3,
     },
-    itemPrice: {
-        fontSize: 14,
-        fontWeight: "800",
-        color: "#444",
+    itemSubtotal: {
+        fontSize: 17,
+        fontWeight: "bold",
+        color: "#636262",
     },
-
-    // ── Right side ──
     itemRight: {
-        paddingTop: 5
+        paddingTop: 5,
     },
     deleteBtn: {
         flexDirection: "row",
-        alignItems: 'center',
+        alignItems: "center",
         gap: 5,
+    },
+    removeText: {
+        color: "#c2c2c2",
+        fontSize: 12,
+    },
+    deliveryText: {
+        color: "#c2c2c2",
+        fontSize: 13,
     },
     qtyControl: {
         flexDirection: "row",
@@ -329,17 +309,20 @@ const styles = StyleSheet.create({
         minWidth: 20,
         textAlign: "center",
     },
-    itemSubtotal: {
-        fontSize: 17,
-        fontWeight: "bold",
-    },
-
     separator: {
         height: 1,
         backgroundColor: "transparent",
     },
-
-    // ── Empty ──
+    delivery: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 2,
+    },
+    delremove: {
+        flexDirection: "column",
+        gap: 5,
+        paddingTop: 6,
+    },
     emptyContainer: {
         flex: 1,
         alignItems: "center",
@@ -369,78 +352,4 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         fontSize: 14,
     },
-
-    // ── Bottom checkout bar ──
-    bottomBar: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "#fff",
-        paddingHorizontal: 16,
-        paddingTop: 14,
-        paddingBottom: 80,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        elevation: 12,
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowOffset: { width: 0, height: -3 },
-        shadowRadius: 8,
-    },
-    billRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 6,
-    },
-    billLabel: {
-        fontSize: 13,
-        color: "#777",
-    },
-    billValue: {
-        fontSize: 13,
-        color: "#444",
-        fontWeight: "600",
-    },
-    totalRow: {
-        borderTopWidth: 1,
-        borderTopColor: "#f0f0f0",
-        paddingTop: 8,
-        marginTop: 4,
-        marginBottom: 12,
-    },
-    totalLabel: {
-        fontSize: 15,
-        fontWeight: "700",
-        color: "#1a1a1a",
-    },
-    totalValue: {
-        fontSize: 16,
-        fontWeight: "800",
-        color: "purple",
-    },
-    checkoutBtn: {
-        backgroundColor: "purple",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        paddingVertical: 14,
-        borderRadius: 12,
-    },
-    checkoutText: {
-        color: "#fff",
-        fontSize: 15,
-        fontWeight: "700",
-    },
-    delivery: {
-        flexDirection: "row",
-        alignItems: 'center',
-        gap: 2
-    },
-    delremove: {
-        flexDirection: "column",
-        gap: 5,
-        paddingTop: 6,
-    },
-})
+});

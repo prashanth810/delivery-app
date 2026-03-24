@@ -90,7 +90,7 @@ const UserProfile = memo(() => {
         <ScrollView
             style={styles.container}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 90 }}>
+            contentContainerStyle={{ paddingBottom: 100 }}>
 
             {/* ── Title ── */}
             <Text style={styles.title}>Hi, {profileuser?.email || "Hi Guest👋"}</Text>

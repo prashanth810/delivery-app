@@ -76,10 +76,8 @@ const CategoryMenu = () => {
     const Rendercatproducts = ({ item }) => {
         const qty = getItemQty(item._id);
 
-        const viewsingleproduct = (productid) => {
-            navigation.navigate("singleproduct", {
-                productid,
-            })
+        const viewsingleproduct = (id) => {
+            navigation.navigate("products", { screen: "singleproduct", params: { productid: id } })
         };
 
         return (

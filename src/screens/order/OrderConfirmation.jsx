@@ -1,8 +1,10 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React from 'react'
+import { useDispatch } from 'react-redux'
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import LottieView from 'lottie-react-native';
+import animation from '../../assets/animation.json';
 
 const OrderConfirmation = () => {
     const dispatch = useDispatch();
@@ -10,84 +12,237 @@ const OrderConfirmation = () => {
     const order = routes?.params?.orderdata;
     const navigation = useNavigation();
 
+    const statusStyles = {
+        Pending: { bg: "#fef08a", text: "#854d0e" },
+        Confirmed: { bg: "#dcfce7", text: "#16a34a" },
+        Delivered: { bg: "#dbeafe", text: "#1d4ed8" },
+        Cancelled: { bg: "#fee2e2", text: "#b91c1c" },
+    };
+
+    const currentStatus = statusStyles[order?.status] || statusStyles.Pending;
+
     return (
         <View style={styles.container}>
-            <View style={styles.checkcirclebg}>
-                <Ionicons name="checkmark-circle" size={35} color={"green"} />
+
+            {/* ── Lottie fills the top half as a background ── */}
+            <View style={styles.lottieWrapper}>
+                <LottieView
+                    source={animation}
+                    autoPlay
+                    loop
+                    style={styles.lottie}
+                />
             </View>
-            <Text style={{ fontSize: 18, fontWeight: "800", paddingVertical: 6 }}> Order Placed </Text>
 
-            <Text style={{ fontSize: 13, textAlign: "center", color: "#8a8a8a", paddingHorizontal: 8, paddingBottom: 12 }}> Your order #{order._id} has been placed successfully ! </Text>
+            {/* ── Content sits on top, centered ── */}
+            <View style={styles.content}>
 
-            <View style={styles.orderdetails}>
-                <View style={styles.ordersdata}>
-                    <Text style={{ fontSize: 16, fontWeight: "600", paddingTop: 7 }}> Order Details </Text>
-                    <Text style={styles.txt}> Total : {order.totalAmount.toFixed(0)} </Text>
-                    <Text style={styles.txt}> Items : {order.items.length} </Text>
-                    <Text style={styles.txt}> Status : {order.status} </Text>
-                    <Text style={styles.txt}> Payment : {order.paymentMethod} </Text>
+                {/* Check icon */}
+                <View style={styles.checkcirclebg}>
+                    <Ionicons name="checkmark-circle" size={40} color="#16a34a" />
                 </View>
-            </View>
 
+                {/* Title */}
+                <Text style={styles.title}>Order Placed!</Text>
 
-            <View>
-                <TouchableOpacity style={styles.continueshping} onPress={() => navigation.navigate("home")}>
-                    <Text style={styles.continuetxt}> Continue Shopping </Text>
+                {/* Subtitle */}
+                <Text style={styles.subtitle}>
+                    Your order #{order?._id} has been placed successfully!
+                </Text>
+
+                {/* Order Details Card */}
+                <View style={styles.card}>
+                    <Text style={styles.cardTitle}>Order Details</Text>
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Total</Text>
+                        <Text style={styles.value}>₹{order?.totalAmount?.toFixed(0)}</Text>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Items</Text>
+                        <Text style={styles.value}>{order?.items?.length}</Text>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Status</Text>
+                        <View style={[styles.statusBadge, { backgroundColor: currentStatus.bg }]}>
+                            <Text style={[styles.statusText, { color: currentStatus.text }]}>
+                                {order?.status}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Payment</Text>
+                        <Text style={styles.value}>{order?.paymentMethod}</Text>
+                    </View>
+                </View>
+
+                {/* Buttons */}
+                <TouchableOpacity
+                    style={styles.primaryBtn}
+                    onPress={() => navigation.navigate("home")}
+                >
+                    <Text style={styles.primaryBtnText}>Continue Shopping</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => navigation.navigate("orders")}>
-                    <Text style={styles.vieworders}> View Orders </Text>
+                <TouchableOpacity
+                    style={styles.secondaryBtn}
+                    onPress={() => navigation.navigate("orders")}
+                >
+                    <Text style={styles.secondaryBtnText}>View Orders</Text>
                 </TouchableOpacity>
+
             </View>
         </View>
-    )
-}
+    );
+};
 
-export default OrderConfirmation
+export default OrderConfirmation;
 
 const styles = StyleSheet.create({
     container: {
+        flex: 1,
         backgroundColor: "#fff",
+    },
+
+    // ── Lottie as full-screen background ──
+    lottieWrapper: {
+        ...StyleSheet.absoluteFillObject, // covers entire screen behind content
+        alignItems: "center",
+        justifyContent: "flex-start",
+        zIndex: 0,
+    },
+    lottie: {
+        width: "100%",
+        height: "100%",
+    },
+
+    // ── Foreground content ──
+    content: {
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
+        paddingHorizontal: 24,
+        zIndex: 1,
     },
+
     checkcirclebg: {
-        backgroundColor: "#d3f0d9",
-        borderRadius: 30,
-        padding: 8,
+        backgroundColor: "#dcfce7",
+        borderRadius: 40,
+        padding: 14,
+        marginBottom: 16,
     },
-    continueshping: {
-        backgroundColor: "green",
-        paddingHorizontal: 20,
-        paddingVertical: 8,
-        borderRadius: 15,
-        marginVertical: 10,
+
+    title: {
+        fontSize: 24,
+        fontWeight: "800",
+        color: "#111",
+        marginBottom: 8,
     },
-    continuetxt: {
-        color: "#fff",
-    },
-    vieworders: {
+
+    subtitle: {
+        fontSize: 13,
         textAlign: "center",
-        color: "green",
-        fontWeight: "500"
+        color: "#6b7280",
+        paddingHorizontal: 12,
+        marginBottom: 24,
+        lineHeight: 20,
     },
-    orderdetails: {
-        width: "93%",
-        borderWidth: 1,
-        borderColor: "#f7f7f7",
-        borderRadius: 13,
-    },
-    ordersdata: {
-        backgroundColor: "#fafcfa",
-        paddingHorizontal: 18,
-        paddingBottom: 13,
+
+    // ── Card ──
+    card: {
         width: "100%",
-        flexDirection: "colimn",
-        gap: 3,
-        borderRadius: 13,
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        marginBottom: 24,
+        // Shadow
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        elevation: 1,
     },
-    txt: {
-        color: "#7d7d7d",
-    }
-})
+
+    cardTitle: {
+        fontSize: 15,
+        fontWeight: "700",
+        color: "#111",
+        marginBottom: 14,
+    },
+
+    row: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: 8,
+    },
+
+    divider: {
+        height: 1,
+        backgroundColor: "#f3f4f6",
+    },
+
+    label: {
+        fontSize: 14,
+        color: "#6b7280",
+    },
+
+    value: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#111",
+    },
+
+    statusBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        borderRadius: 20,
+    },
+
+    statusText: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#16a34a",
+    },
+
+    // ── Buttons ──
+    primaryBtn: {
+        width: "100%",
+        backgroundColor: "#16a34a",
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: "center",
+        marginBottom: 12,
+    },
+
+    primaryBtnText: {
+        color: "#fff",
+        fontSize: 15,
+        fontWeight: "700",
+    },
+
+    secondaryBtn: {
+        width: "100%",
+        paddingVertical: 12,
+        borderRadius: 10,
+        alignItems: "center",
+        borderWidth: 1.5,
+        borderColor: "#16a34a",
+    },
+
+    secondaryBtnText: {
+        color: "#16a34a",
+        fontSize: 15,
+        fontWeight: "600",
+    },
+});
